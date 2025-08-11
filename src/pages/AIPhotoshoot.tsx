@@ -19,70 +19,104 @@ import { useToast } from "@/hooks/use-toast";
 const AIPhotoshoot = () => {
   const { toast } = useToast();
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
-  const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [generatedImages, setGeneratedImages] = useState<string[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedModel, setSelectedModel] = useState("");
   const [selectedBackground, setSelectedBackground] = useState("");
-  const [selectedPose, setSelectedPose] = useState("");
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setUploadedImage(e.target?.result as string);
-        toast({
-          title: "Image uploaded successfully!",
-          description: "Ready for AI processing",
-        });
-      };
-      reader.readAsDataURL(file);
+      setUploadedFile(file);
+      const previewUrl = URL.createObjectURL(file);
+      setUploadedImage(previewUrl);
+      toast({
+        title: "Image uploaded successfully!",
+        description: "Ready for AI processing",
+      });
     }
   };
 
-  const handleGeneratePhotoshoot = () => {
-    if (!uploadedImage || !selectedModel || !selectedBackground || !selectedPose) {
+  const handleGeneratePhotoshoot = async () => {
+    const TRYON_API_URL = ""; // TODO: set your Virtual Try-On API endpoint
+    if (!uploadedFile || !selectedModel || !selectedBackground) {
       toast({
         title: "Missing information",
-        description: "Please upload an image and select all options",
+        description: "Please upload a garment image and select model and background",
         variant: "destructive"
       });
       return;
     }
 
-    setIsProcessing(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      setGeneratedImage("/api/placeholder/400/500");
-      setIsProcessing(false);
+    if (!TRYON_API_URL) {
       toast({
-        title: "AI Photoshoot Complete!",
-        description: "Your professional model image is ready",
+        title: "API not configured",
+        description: "Please provide the Virtual Try-On API URL to enable generation.",
+        variant: "destructive",
       });
-    }, 3000);
+      return;
+    }
+
+    try {
+      setIsProcessing(true);
+      setGeneratedImages([]);
+
+      const form = new FormData();
+      form.append("garment", uploadedFile);
+      form.append("model_type", selectedModel);
+      form.append("background", selectedBackground);
+      form.append("count", String(6));
+
+      const res = await fetch(TRYON_API_URL, {
+        method: "POST",
+        body: form,
+      });
+
+      if (!res.ok) {
+        throw new Error(`Request failed (${res.status})`);
+      }
+
+      const data = await res.json();
+      const arr = (data?.images || data?.results || data?.output || []) as string[];
+      if (!Array.isArray(arr) || arr.length === 0) {
+        throw new Error("No images returned by API");
+      }
+
+      const normalized = arr.map((img) => {
+        if (typeof img !== "string") return "";
+        if (img.startsWith("http") || img.startsWith("data:")) return img;
+        return `data:image/png;base64,${img}`;
+      }).filter(Boolean) as string[];
+
+      setGeneratedImages(normalized);
+      toast({
+        title: "Photoshoot ready!",
+        description: `Received ${normalized.length} images.`,
+      });
+    } catch (error: any) {
+      console.error(error);
+      toast({
+        title: "Generation failed",
+        description: error?.message || "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const modelOptions = [
-    { value: "model1", label: "Professional Female Model" },
-    { value: "model2", label: "Professional Male Model" },
-    { value: "model3", label: "Casual Female Model" },
-    { value: "model4", label: "Casual Male Model" },
+    { value: "indian_female", label: "Indian Female" },
+    { value: "indian_male", label: "Indian Male" },
   ];
 
   const backgroundOptions = [
-    { value: "studio", label: "White Studio Background" },
-    { value: "street", label: "Urban Street Style" },
-    { value: "minimal", label: "Minimal Modern" },
-    { value: "outdoor", label: "Natural Outdoor" },
+    { value: "nature", label: "Nature" },
+    { value: "urban", label: "Urban" },
+    { value: "studio", label: "Studio" },
   ];
 
-  const poseOptions = [
-    { value: "standing", label: "Standing Pose" },
-    { value: "sitting", label: "Sitting Pose" },
-    { value: "walking", label: "Walking Pose" },
-    { value: "casual", label: "Casual Pose" },
-  ];
 
   return (
     <div className="min-h-screen bg-background">
@@ -193,26 +227,11 @@ const AIPhotoshoot = () => {
                 </Select>
               </div>
 
-              <div>
-                <Label>Pose Style</Label>
-                <Select value={selectedPose} onValueChange={setSelectedPose}>
-                  <SelectTrigger className="mt-2">
-                    <SelectValue placeholder="Select pose" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {poseOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
 
               <Button 
                 className="w-full btn-primary mt-6"
                 onClick={handleGeneratePhotoshoot}
-                disabled={isProcessing || !uploadedImage}
+                disabled={isProcessing || !uploadedFile}
               >
                 {isProcessing ? (
                   <>
@@ -233,45 +252,52 @@ const AIPhotoshoot = () => {
           <Card className="p-6">
             <h2 className="text-xl font-semibold mb-6 flex items-center">
               <User className="h-5 w-5 mr-2" />
-              AI Generated Result
+              AI Generated Results
             </h2>
 
-            <div className="border border-border rounded-lg p-8 text-center bg-muted/30 h-80 flex items-center justify-center">
-              {isProcessing ? (
-                <div className="space-y-4">
-                  <Wand2 className="h-12 w-12 mx-auto text-primary animate-spin" />
-                  <p className="text-muted-foreground">Creating your AI photoshoot...</p>
-                  <div className="w-48 bg-muted rounded-full h-2">
-                    <div className="bg-primary h-2 rounded-full w-1/2 animate-pulse"></div>
+              <div className="border border-border rounded-lg p-8 text-center bg-muted/30 min-h-[20rem] flex items-center justify-center">
+                {isProcessing ? (
+                  <div className="space-y-4">
+                    <Wand2 className="h-12 w-12 mx-auto text-primary animate-spin" />
+                    <p className="text-muted-foreground">Creating your AI photoshoot...</p>
+                    <div className="w-48 bg-muted rounded-full h-2">
+                      <div className="bg-primary h-2 rounded-full w-1/2 animate-pulse"></div>
+                    </div>
                   </div>
-                </div>
-              ) : generatedImage ? (
-                <div className="space-y-4 w-full">
-                  <img 
-                    src={generatedImage} 
-                    alt="AI Generated Model" 
-                    className="max-w-full h-60 object-contain mx-auto rounded"
-                  />
-                  <div className="flex space-x-2">
-                    <Button variant="outline" className="flex-1">
-                      <Download className="h-4 w-4 mr-2" />
-                      Download
-                    </Button>
-                    <Button className="btn-primary flex-1" onClick={handleGeneratePhotoshoot}>
+                ) : generatedImages.length > 0 ? (
+                  <div className="w-full">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                      {generatedImages.map((img, idx) => (
+                        <div key={idx} className="space-y-2">
+                          <img
+                            src={img}
+                            alt={`AI generated model ${idx + 1}`}
+                            className="w-full h-48 object-cover rounded"
+                            loading="lazy"
+                          />
+                          <Button variant="outline" className="w-full" asChild>
+                            <a href={img} download={`ai-photoshoot-${idx + 1}.png`}>
+                              <Download className="h-4 w-4 mr-2" />
+                              Download
+                            </a>
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                    <Button className="btn-primary w-full mt-4" onClick={handleGeneratePhotoshoot}>
                       <Wand2 className="h-4 w-4 mr-2" />
                       Generate New
                     </Button>
                   </div>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <Camera className="h-12 w-12 mx-auto text-muted-foreground" />
-                  <p className="text-muted-foreground">
-                    Your AI-generated model photoshoot will appear here
-                  </p>
-                </div>
-              )}
-            </div>
+                ) : (
+                  <div className="space-y-4">
+                    <Camera className="h-12 w-12 mx-auto text-muted-foreground" />
+                    <p className="text-muted-foreground">
+                      Your AI-generated model photoshoot will appear here
+                    </p>
+                  </div>
+                )}
+              </div>
 
             {/* Info */}
             <div className="mt-6 p-4 bg-muted/50 rounded-lg">
