@@ -4,18 +4,18 @@ import heroImage from "@/assets/fashion-tech-hero.jpg";
 
 const HeroSection = () => {
   return (
-    <section className="relative min-h-screen flex items-center justify-center hero-bg overflow-hidden">
+    <section className="relative min-h-[85vh] md:min-h-screen flex items-center justify-center hero-bg overflow-hidden">
       {/* Background Image */}
       <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20"
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-40"
         style={{ backgroundImage: `url(${heroImage})` }}
       />
       
       {/* Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-r from-hero-bg/90 to-hero-bg-light/80" />
+      <div className="absolute inset-0 bg-gradient-to-r from-hero-bg/70 to-hero-bg-light/60 md:from-hero-bg/90 md:to-hero-bg-light/80" />
       
       {/* Floating Elements */}
-      <div className="absolute inset-0 pointer-events-none">
+      <div className="absolute inset-0 pointer-events-none hidden md:block">
         <div className="absolute top-20 left-10 w-32 h-32 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute bottom-32 right-20 w-40 h-40 bg-white/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
         <div className="absolute top-1/2 left-1/4 w-24 h-24 bg-white/5 rounded-full blur-2xl animate-pulse delay-500"></div>
@@ -31,7 +31,7 @@ const HeroSection = () => {
             </span>
           </h1>
           
-          <p className="text-xl md:text-2xl mb-8 text-white/80 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-base md:text-2xl mb-8 text-white/80 max-w-3xl mx-auto leading-relaxed">
             Empowering fashion brands with AI innovation.
           </p>
           

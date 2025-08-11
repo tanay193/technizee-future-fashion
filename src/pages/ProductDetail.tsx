@@ -13,6 +13,7 @@ import {
   X
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { products } from "@/data/products";
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -21,36 +22,75 @@ const ProductDetail = () => {
   const [selectedColor, setSelectedColor] = useState("");
   const [showTryOnModal, setShowTryOnModal] = useState(false);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  
+  // Set this to your API endpoint when ready
+  const TRYON_API_URL = "";
 
-  // Mock product data - in real app this would come from API
-  const product = {
-    id: 1,
-    name: "Premium Cotton T-Shirt",
-    price: "₹1,299",
-    originalPrice: "₹1,999",
-    images: ["/api/placeholder/500/600", "/api/placeholder/500/600", "/api/placeholder/500/600"],
-    rating: 4.5,
-    reviews: 128,
-    sizes: ["S", "M", "L", "XL"],
-    colors: ["Black", "White", "Navy", "Gray"],
-    description: "Premium quality cotton t-shirt with perfect fit and comfort. Made from 100% organic cotton with sustainable practices.",
-    features: ["100% Organic Cotton", "Pre-shrunk", "Machine Washable", "Eco-friendly"]
-  };
+  // Find product by route id
+  const product = products.find((p) => p.id === Number(id));
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  if (!product) {
+    return (
+      <div className="min-h-screen bg-background">
+        <header className="border-b border-border">
+          <div className="container mx-auto px-6 py-4">
+            <Link to="/virtual-tryon" className="flex items-center space-x-2">
+              <ArrowLeft className="h-4 w-4" />
+              <span>Back to Store</span>
+            </Link>
+          </div>
+        </header>
+        <div className="container mx-auto px-6 py-12">
+          Product not found.
+        </div>
+      </div>
+    );
+  }
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setUploadedImage(e.target?.result as string);
-        // Here you would call the virtual try-on API
-        toast({
-          title: "Image uploaded successfully!",
-          description: "Processing virtual try-on...",
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const userImage = e.target?.result as string;
+      setUploadedImage(userImage);
+
+      try {
+        if (!TRYON_API_URL) {
+          toast({
+            title: "Image uploaded",
+            description: "Add your API URL to enable virtual try-on.",
+          });
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append("user_image", file);
+        formData.append("product_image_url", product.images[0]);
+        formData.append("product_id", String(product.id));
+
+        const res = await fetch(TRYON_API_URL, {
+          method: "POST",
+          body: formData,
         });
-      };
-      reader.readAsDataURL(file);
-    }
+
+        if (!res.ok) throw new Error("Try-on request failed");
+
+        toast({
+          title: "Processing virtual try-on...",
+          description: "We'll show the result here once it's ready.",
+        });
+      } catch (err) {
+        toast({
+          title: "Try-on failed",
+          description: "Please check the API and try again.",
+          variant: "destructive",
+        });
+      }
+    };
+
+    reader.readAsDataURL(file);
   };
 
   const handleCameraCapture = () => {
@@ -223,7 +263,7 @@ const ProductDetail = () => {
                 <span className="text-lg text-muted-foreground line-through">
                   {product.originalPrice}
                 </span>
-                <Badge className="bg-green-100 text-green-800">35% OFF</Badge>
+                <Badge className="bg-green-100 text-green-800">Best Price</Badge>
               </div>
             </div>
 
@@ -279,9 +319,9 @@ const ProductDetail = () => {
             {/* Product Description */}
             <div>
               <h3 className="font-semibold mb-3">Description</h3>
-              <p className="text-muted-foreground mb-4">{product.description}</p>
+              <p className="text-muted-foreground mb-4">High-quality product with perfect fit and comfort.</p>
               <ul className="space-y-2">
-                {product.features.map((feature, index) => (
+                {["Premium Fabric", "Pre-shrunk", "Machine Washable", "Eco-friendly"].map((feature, index) => (
                   <li key={index} className="flex items-center text-sm">
                     <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
                     {feature}
