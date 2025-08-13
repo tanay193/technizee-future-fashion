@@ -5,7 +5,7 @@ const PricingSection = () => {
   const plans = [
     {
       name: "Starter",
-      price: "₹29,000",
+      price: "₹24,999",
       period: "/month",
       description: "Perfect for new D2C brands testing AI content",
       features: [
@@ -21,14 +21,14 @@ const PricingSection = () => {
     },
     {
       name: "Pro",
-      price: "₹49,000",
+      price: "₹39,000",
       period: "/month",
       description: "Most value for scaling fashion brands",
       features: [
         "3 AI Photoshoots (up to 15 garments)",
         "2,000 Virtual Try-On Requests",
         "Full Website Integration",
-        "1 Growth Strategy Call",
+        "Growth Strategy",
         "WhatsApp Support"
       ],
       bestFor: "Scaling fashion brands",
@@ -72,7 +72,7 @@ const PricingSection = () => {
     {
       name: "Enterprise",
       price: "Custom",
-      period: "Quote",
+      period: " Quote",
       description: "Unlimited solution for large businesses",
       features: [
         "Unlimited Photoshoots & Try-On Requests",
@@ -90,11 +90,11 @@ const PricingSection = () => {
   const addOns = [
     {
       name: "Extra Try-On Requests",
-      price: "₹2,000 for 1,000 requests"
+      price: "₹5,000 for 1,000 requests"
     },
     {
       name: "Extra AI Photoshoot",
-      price: "₹3,000 (5 garments)"
+      price: "₹5,000 (5 garments)"
     },
     {
       name: "Instagram Reels (AI Model Generated)",
@@ -126,9 +126,8 @@ const PricingSection = () => {
           {plans.map((plan, index) => (
             <div
               key={index}
-              className={`card-pricing animate-fade-up animate-delay-${(index + 1) * 100} ${
-                plan.popular ? 'ring-2 ring-primary' : ''
-              }`}
+              className={`card-pricing transition-all hover:-translate-y-1 animate-fade-up animate-delay-${(index + 1) * 100} ${plan.popular ? 'ring-2 ring-primary shadow-glow scale-[1.02]' : ''}`}
+
             >
               {plan.popular && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
@@ -170,7 +169,7 @@ const PricingSection = () => {
 
         {/* Add-On Options Section */}
         <div className="bg-muted/20 rounded-2xl p-8 mb-12">
-          <h3 className="text-2xl font-bold text-center mb-8">Add-On Options</h3>
+          <h3 className="heading-section text-center mb-8">Add-On Options</h3>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
             {addOns.map((addon, index) => (
               <div key={index} className="bg-background rounded-lg p-6 border border-border">
