@@ -4,11 +4,72 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ShoppingCart, Camera, Upload, Star } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 import { products } from "@/data/products";
 
 const VirtualTryOn = () => {
+  const { toast } = useToast();
   const [selectedProduct, setSelectedProduct] = useState<number | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const handleVirtualTryOn = async (productId: number) => {
+    const VIRTUAL_TRYON_API_URL = ""; // TODO: set your Virtual Try-On API endpoint
+    
+    if (!VIRTUAL_TRYON_API_URL) {
+      toast({
+        title: "API not configured",
+        description: "Please provide the Virtual Try-On API URL to enable try-on functionality.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSelectedProduct(productId);
+    setIsProcessing(true);
+
+    try {
+      const product = products.find(p => p.id === productId);
+      if (!product) return;
+
+      // TODO: Replace with actual API call structure based on your API requirements
+      const response = await fetch(VIRTUAL_TRYON_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          product_id: productId,
+          product_image: product.images[0],
+          // Add other required fields based on your API
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`API request failed (${response.status})`);
+      }
+
+      const data = await response.json();
+      
+      toast({
+        title: "Virtual Try-On Ready!",
+        description: "Processing completed successfully.",
+      });
+
+      // TODO: Handle the API response (display try-on result, redirect, etc.)
+      console.log("Virtual Try-On result:", data);
+
+    } catch (error: any) {
+      console.error("Virtual Try-On error:", error);
+      toast({
+        title: "Try-On failed",
+        description: error?.message || "Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -91,9 +152,10 @@ const VirtualTryOn = () => {
                   </Link>
                   <Button 
                     className="btn-primary w-full text-lg py-3 h-auto"
-                    onClick={() => setSelectedProduct(product.id)}
+                    onClick={() => handleVirtualTryOn(product.id)}
+                    disabled={isProcessing && selectedProduct === product.id}
                   >
-                    Try On
+                    {isProcessing && selectedProduct === product.id ? "Processing..." : "Try On"}
                   </Button>
                 </div>
               </div>
