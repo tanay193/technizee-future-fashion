@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Upload, 
   Download, 
@@ -16,21 +15,42 @@ import {
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
+// Import model images
+import femaleModel1 from "@/assets/models/female-model-1.jpg";
+import maleModel1 from "@/assets/models/male-model-1.jpg";
+
 const AIPhotoshoot = () => {
   const { toast } = useToast();
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
-  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const [generatedImages, setGeneratedImages] = useState<string[]>([]);
+  const [selectedModel, setSelectedModel] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState(false);
-  const [selectedModel, setSelectedModel] = useState("");
-  const [selectedBackground, setSelectedBackground] = useState("");
+  const [generatedImages, setGeneratedImages] = useState<string[]>([]);
+
+  const modelOptions = [
+    { 
+      id: "female-model-1", 
+      name: "Female Model A", 
+      description: "Professional female model for women's clothing",
+      imagePath: "female-model-1.jpg",
+      preview: femaleModel1
+    },
+    { 
+      id: "male-model-1", 
+      name: "Male Model A", 
+      description: "Professional male model for men's clothing",
+      imagePath: "male-model-1.jpg", 
+      preview: maleModel1
+    },
+  ];
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      setUploadedFile(file);
-      const previewUrl = URL.createObjectURL(file);
-      setUploadedImage(previewUrl);
+      const reader = new FileReader();
+      reader.onload = () => {
+        setUploadedImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
       toast({
         title: "Image uploaded successfully!",
         description: "Ready for AI processing",
@@ -39,84 +59,87 @@ const AIPhotoshoot = () => {
   };
 
   const handleGeneratePhotoshoot = async () => {
-    const TRYON_API_URL = ""; // TODO: set your Virtual Try-On API endpoint
-    if (!uploadedFile || !selectedModel || !selectedBackground) {
-      toast({
-        title: "Missing information",
-        description: "Please upload a garment image and select model and background",
-        variant: "destructive"
-      });
-      return;
-    }
-
+    const TRYON_API_URL = ""; // TODO: Paste your Azure ML endpoint URL here (same as Virtual Try-On)
+    
     if (!TRYON_API_URL) {
       toast({
-        title: "API not configured",
-        description: "Please provide the Virtual Try-On API URL to enable generation.",
+        title: "API not configured", 
+        description: "Please provide the Try-On API URL to enable photoshoot generation.",
         variant: "destructive",
       });
       return;
     }
 
-    try {
-      setIsProcessing(true);
-      setGeneratedImages([]);
-
-      const form = new FormData();
-      form.append("garment", uploadedFile);
-      form.append("model_type", selectedModel);
-      form.append("background", selectedBackground);
-      form.append("count", String(6));
-
-      const res = await fetch(TRYON_API_URL, {
-        method: "POST",
-        body: form,
-      });
-
-      if (!res.ok) {
-        throw new Error(`Request failed (${res.status})`);
-      }
-
-      const data = await res.json();
-      const arr = (data?.images || data?.results || data?.output || []) as string[];
-      if (!Array.isArray(arr) || arr.length === 0) {
-        throw new Error("No images returned by API");
-      }
-
-      const normalized = arr.map((img) => {
-        if (typeof img !== "string") return "";
-        if (img.startsWith("http") || img.startsWith("data:")) return img;
-        return `data:image/png;base64,${img}`;
-      }).filter(Boolean) as string[];
-
-      setGeneratedImages(normalized);
+    if (!uploadedImage) {
       toast({
-        title: "Photoshoot ready!",
-        description: `Received ${normalized.length} images.`,
+        title: "No image uploaded",
+        description: "Please upload a garment image first.",
+        variant: "destructive",
       });
+      return;
+    }
+
+    if (!selectedModel) {
+      toast({
+        title: "Selection incomplete",
+        description: "Please select a model.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsProcessing(true);
+
+    try {
+      // Find selected model info
+      const modelInfo = modelOptions.find(m => m.id === selectedModel);
+      if (!modelInfo) throw new Error("Invalid model selection");
+
+      // Determine category based on garment (simplified logic for now)
+      const category = "upper_body"; // You can enhance this logic later
+
+      const requestBody = {
+        model_image_path: modelInfo.imagePath,
+        garment_image: uploadedImage, // Already base64 from file upload
+        category: category,
+        has_sleeves: null // Let model auto-detect
+      };
+
+      const apiResponse = await fetch(TRYON_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (!apiResponse.ok) {
+        throw new Error(`API request failed (${apiResponse.status})`);
+      }
+
+      const data = await apiResponse.json();
+      
+      if (data.success && data.result_image) {
+        setGeneratedImages([data.result_image]);
+        toast({
+          title: "AI Photoshoot Complete!",
+          description: `Successfully generated photoshoot image. Detected: ${data.detected_sleeves} sleeves.`,
+        });
+      } else {
+        throw new Error(data.error || "Unknown error occurred");
+      }
+
     } catch (error: any) {
-      console.error(error);
+      console.error("Photoshoot generation error:", error);
       toast({
         title: "Generation failed",
-        description: error?.message || "Please try again.",
+        description: error?.message || "Please try again later.",
         variant: "destructive",
       });
     } finally {
       setIsProcessing(false);
     }
   };
-
-  const modelOptions = [
-    { value: "indian_female", label: "Indian Female" },
-    { value: "indian_male", label: "Indian Male" },
-  ];
-
-  const backgroundOptions = [
-    { value: "nature", label: "Nature" },
-    { value: "urban", label: "Urban" },
-    { value: "studio", label: "Studio" },
-  ];
-
 
   return (
     <div className="min-h-screen bg-background">
@@ -145,8 +168,8 @@ const AIPhotoshoot = () => {
             AI Product Photoshoot
           </h1>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Transform your flat lay or mannequin images into professional model photoshoots. 
-            No photographers, no models, just AI magic.
+            Transform your garment images into professional model photoshoots. 
+            Upload a garment image and select a model to see how it looks.
           </p>
         </div>
 
@@ -160,7 +183,7 @@ const AIPhotoshoot = () => {
 
             {/* Image Upload */}
             <div className="space-y-4 mb-6">
-              <Label>Product Image (Flat lay or Mannequin)</Label>
+              <Label>Product Image</Label>
               <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center">
                 {uploadedImage ? (
                   <img 
@@ -171,7 +194,7 @@ const AIPhotoshoot = () => {
                 ) : (
                   <div className="space-y-4">
                     <Upload className="h-12 w-12 mx-auto text-muted-foreground" />
-                    <p className="text-muted-foreground">Drop your product image here</p>
+                    <p className="text-muted-foreground">Drop your garment image here</p>
                   </div>
                 )}
                 
@@ -193,59 +216,57 @@ const AIPhotoshoot = () => {
               </div>
             </div>
 
-            {/* AI Settings */}
+            {/* Model Selection */}
             <div className="space-y-4">
-              <div>
-                <Label>Model Type</Label>
-                <Select value={selectedModel} onValueChange={setSelectedModel}>
-                  <SelectTrigger className="mt-2">
-                    <SelectValue placeholder="Select model type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {modelOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <h3 className="text-lg font-semibold">Choose Model</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {modelOptions.map((model) => (
+                  <Card 
+                    key={model.id}
+                    className={`cursor-pointer transition-all ${
+                      selectedModel === model.id 
+                        ? 'ring-2 ring-primary bg-primary/5' 
+                        : 'hover:bg-accent'
+                    }`}
+                    onClick={() => setSelectedModel(model.id)}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-center space-x-3">
+                        <img 
+                          src={model.preview} 
+                          alt={model.name}
+                          className="w-16 h-20 object-cover rounded border"
+                        />
+                        <div className="text-left">
+                          <h4 className="font-medium">{model.name}</h4>
+                          <p className="text-sm text-muted-foreground mt-1">{model.description}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
-
-              <div>
-                <Label>Background Style</Label>
-                <Select value={selectedBackground} onValueChange={setSelectedBackground}>
-                  <SelectTrigger className="mt-2">
-                    <SelectValue placeholder="Select background" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {backgroundOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-
-              <Button 
-                className="w-full btn-primary mt-6"
-                onClick={handleGeneratePhotoshoot}
-                disabled={isProcessing || !uploadedFile}
-              >
-                {isProcessing ? (
-                  <>
-                    <Wand2 className="h-4 w-4 mr-2 animate-spin" />
-                    Generating...
-                  </>
-                ) : (
-                  <>
-                    <Wand2 className="h-4 w-4 mr-2" />
-                    Generate AI Photoshoot
-                  </>
-                )}
-              </Button>
             </div>
+
+            {/* Note: Background selection removed since we're using the model's background */}
+
+            <Button 
+              className="w-full btn-primary mt-6"
+              onClick={handleGeneratePhotoshoot}
+              disabled={!uploadedImage || !selectedModel || isProcessing}
+            >
+              {isProcessing ? (
+                <>
+                  <Wand2 className="h-4 w-4 mr-2 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Wand2 className="h-4 w-4 mr-2" />
+                  Generate AI Photoshoot
+                </>
+              )}
+            </Button>
           </Card>
 
           {/* Results */}
@@ -255,58 +276,58 @@ const AIPhotoshoot = () => {
               AI Generated Results
             </h2>
 
-              <div className="border border-border rounded-lg p-8 text-center bg-muted/30 min-h-[20rem] flex items-center justify-center">
-                {isProcessing ? (
+            <div className="border border-border rounded-lg p-8 text-center bg-muted/30 min-h-[20rem] flex items-center justify-center">
+              {isProcessing ? (
+                <div className="space-y-4">
+                  <Wand2 className="h-12 w-12 mx-auto text-primary animate-spin" />
+                  <p className="text-muted-foreground">Creating your AI photoshoot...</p>
+                  <div className="w-48 bg-muted rounded-full h-2">
+                    <div className="bg-primary h-2 rounded-full w-1/2 animate-pulse"></div>
+                  </div>
+                </div>
+              ) : generatedImages.length > 0 ? (
+                <div className="w-full">
                   <div className="space-y-4">
-                    <Wand2 className="h-12 w-12 mx-auto text-primary animate-spin" />
-                    <p className="text-muted-foreground">Creating your AI photoshoot...</p>
-                    <div className="w-48 bg-muted rounded-full h-2">
-                      <div className="bg-primary h-2 rounded-full w-1/2 animate-pulse"></div>
-                    </div>
+                    {generatedImages.map((img, idx) => (
+                      <div key={idx} className="space-y-2">
+                        <img
+                          src={img}
+                          alt={`AI generated model ${idx + 1}`}
+                          className="w-full max-w-md mx-auto rounded-lg shadow-lg"
+                          loading="lazy"
+                        />
+                        <Button variant="outline" className="w-full" asChild>
+                          <a href={img} download={`ai-photoshoot-${idx + 1}.jpg`}>
+                            <Download className="h-4 w-4 mr-2" />
+                            Download Result
+                          </a>
+                        </Button>
+                      </div>
+                    ))}
                   </div>
-                ) : generatedImages.length > 0 ? (
-                  <div className="w-full">
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                      {generatedImages.map((img, idx) => (
-                        <div key={idx} className="space-y-2">
-                          <img
-                            src={img}
-                            alt={`AI generated model ${idx + 1}`}
-                            className="w-full h-48 object-cover rounded"
-                            loading="lazy"
-                          />
-                          <Button variant="outline" className="w-full" asChild>
-                            <a href={img} download={`ai-photoshoot-${idx + 1}.png`}>
-                              <Download className="h-4 w-4 mr-2" />
-                              Download
-                            </a>
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                    <Button className="btn-primary w-full mt-4" onClick={handleGeneratePhotoshoot}>
-                      <Wand2 className="h-4 w-4 mr-2" />
-                      Generate New
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <Camera className="h-12 w-12 mx-auto text-muted-foreground" />
-                    <p className="text-muted-foreground">
-                      Your AI-generated model photoshoot will appear here
-                    </p>
-                  </div>
-                )}
-              </div>
+                  <Button className="btn-primary w-full mt-4" onClick={handleGeneratePhotoshoot}>
+                    <Wand2 className="h-4 w-4 mr-2" />
+                    Generate New
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <Camera className="h-12 w-12 mx-auto text-muted-foreground" />
+                  <p className="text-muted-foreground">
+                    Your AI-generated model photoshoot will appear here
+                  </p>
+                </div>
+              )}
+            </div>
 
             {/* Info */}
             <div className="mt-6 p-4 bg-muted/50 rounded-lg">
               <h3 className="font-semibold text-sm mb-2">Tips for best results:</h3>
               <ul className="text-sm text-muted-foreground space-y-1">
-                <li>• Use high-resolution product images</li>
+                <li>• Use high-resolution garment images</li>
                 <li>• Ensure good lighting and clear details</li>
-                <li>• Flat lay images work better than mannequin shots</li>
-                <li>• Choose appropriate model and background combinations</li>
+                <li>• Choose appropriate model for the garment type</li>
+                <li>• Flat lay images often work better</li>
               </ul>
             </div>
           </Card>

@@ -13,13 +13,25 @@ const VirtualTryOn = () => {
   const [selectedProduct, setSelectedProduct] = useState<number | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
+  const [userImageFile, setUserImageFile] = useState<File | null>(null);
+  const [tryOnResult, setTryOnResult] = useState<string | null>(null);
+
   const handleVirtualTryOn = async (productId: number) => {
-    const VIRTUAL_TRYON_API_URL = ""; // TODO: set your Virtual Try-On API endpoint
+    const VIRTUAL_TRYON_API_URL = ""; // TODO: Paste your Azure ML endpoint URL here
     
     if (!VIRTUAL_TRYON_API_URL) {
       toast({
         title: "API not configured",
         description: "Please provide the Virtual Try-On API URL to enable try-on functionality.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!userImageFile) {
+      toast({
+        title: "Upload required",
+        description: "Please upload your photo first to try on this item.",
         variant: "destructive",
       });
       return;
@@ -32,17 +44,26 @@ const VirtualTryOn = () => {
       const product = products.find(p => p.id === productId);
       if (!product) return;
 
-      // TODO: Replace with actual API call structure based on your API requirements
+      // Convert images to base64
+      const userImageB64 = await fileToBase64(userImageFile);
+      const garmentImageB64 = await urlToBase64(product.images[0]);
+      
+      // Determine category based on product (simplified logic)
+      const category = 'upper_body'; // Most products are upper body, enhance this logic later
+
+      const requestBody = {
+        user_image: userImageB64,
+        garment_image: garmentImageB64,
+        category: category,
+        has_sleeves: null // Let model auto-detect
+      };
+
       const response = await fetch(VIRTUAL_TRYON_API_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          product_id: productId,
-          product_image: product.images[0],
-          // Add other required fields based on your API
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
@@ -51,13 +72,15 @@ const VirtualTryOn = () => {
 
       const data = await response.json();
       
-      toast({
-        title: "Virtual Try-On Ready!",
-        description: "Processing completed successfully.",
-      });
-
-      // TODO: Handle the API response (display try-on result, redirect, etc.)
-      console.log("Virtual Try-On result:", data);
+      if (data.success && data.result_image) {
+        setTryOnResult(data.result_image);
+        toast({
+          title: "Virtual Try-On Complete!",
+          description: `Successfully tried on ${product.name}. Detected: ${data.detected_sleeves} sleeves.`,
+        });
+      } else {
+        throw new Error(data.error || "Unknown error occurred");
+      }
 
     } catch (error: any) {
       console.error("Virtual Try-On error:", error);
@@ -69,6 +92,26 @@ const VirtualTryOn = () => {
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const urlToBase64 = async (url: string): Promise<string> => {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
   };
 
   return (
@@ -98,69 +141,113 @@ const VirtualTryOn = () => {
       </header>
 
       <div className="container mx-auto px-12 py-12">
-        <div className="text-center mb-16">
-          <h1 className="text-6xl font-bold text-foreground mb-8">
-            Virtual Try-On Store
-          </h1>
-          <p className="text-2xl text-muted-foreground max-w-4xl mx-auto leading-relaxed">
-            Try our clothes virtually before you buy. Upload your photo or use camera to see how they look on you.
-          </p>
-        </div>
+        <div className="space-y-8">
+          <div className="text-center space-y-4">
+            <h1 className="text-5xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              Virtual Try-On Store
+            </h1>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Experience the future of fashion with our AI-powered virtual try-on technology. 
+              See how clothes look on you before you buy!
+            </p>
+          </div>
 
-        {/* Products Grid - Optimized for horizontal TV layout */}
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-8">
-          {products.map((product) => (
-            <Card key={product.id} className="p-6 hover:shadow-glow hover:scale-105 transition-all duration-300">
-              <div className="aspect-[3/4] bg-muted rounded-lg mb-6 relative overflow-hidden">
-                <img 
-                  src={product.images[0]} 
-                  alt={product.name}
-                  className="w-full h-full object-cover"
-                />
-                <Badge className="absolute top-3 left-3 bg-destructive text-lg px-3 py-1">
-                  Sale
-                </Badge>
-              </div>
-              
-              <div className="space-y-4">
-                <h3 className="text-xl font-semibold text-foreground">{product.name}</h3>
+          {/* User Image Upload Section */}
+          <div className="max-w-md mx-auto bg-card p-6 rounded-lg border">
+            <h3 className="text-lg font-semibold mb-4 text-center">Upload Your Photo</h3>
+            <div className="space-y-4">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setUserImageFile(e.target.files?.[0] || null)}
+                className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/80"
+              />
+              {userImageFile && (
+                <p className="text-sm text-green-600 text-center">
+                  ✓ Photo uploaded: {userImageFile.name}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Try-On Result Display */}
+          {tryOnResult && (
+            <div className="max-w-md mx-auto bg-card p-6 rounded-lg border">
+              <h3 className="text-lg font-semibold mb-4 text-center">Your Virtual Try-On Result</h3>
+              <img 
+                src={tryOnResult} 
+                alt="Virtual try-on result" 
+                className="w-full rounded-lg shadow-lg"
+              />
+              <Button 
+                className="w-full mt-4"
+                onClick={() => {
+                  const link = document.createElement('a');
+                  link.href = tryOnResult;
+                  link.download = 'virtual-tryon-result.jpg';
+                  link.click();
+                }}
+              >
+                Download Result
+              </Button>
+            </div>
+          )}
+
+          {/* Products Grid - Optimized for horizontal TV layout */}
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-8">
+            {products.map((product) => (
+              <Card key={product.id} className="p-6 hover:shadow-glow hover:scale-105 transition-all duration-300">
+                <div className="aspect-[3/4] bg-muted rounded-lg mb-6 relative overflow-hidden">
+                  <img 
+                    src={product.images[0]} 
+                    alt={product.name}
+                    className="w-full h-full object-cover"
+                  />
+                  <Badge className="absolute top-3 left-3 bg-destructive text-lg px-3 py-1">
+                    Sale
+                  </Badge>
+                </div>
                 
-                <div className="flex items-center space-x-3">
-                  <div className="flex items-center">
-                    <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                    <span className="text-lg text-muted-foreground ml-2">
-                      {product.rating} ({product.reviews})
+                <div className="space-y-4">
+                  <h3 className="text-xl font-semibold text-foreground">{product.name}</h3>
+                  
+                  <div className="flex items-center space-x-3">
+                    <div className="flex items-center">
+                      <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                      <span className="text-lg text-muted-foreground ml-2">
+                        {product.rating} ({product.reviews})
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-3">
+                    <span className="text-2xl font-bold text-foreground">{product.price}</span>
+                    <span className="text-lg text-muted-foreground line-through">
+                      {product.originalPrice}
                     </span>
                   </div>
-                </div>
 
-                <div className="flex items-center space-x-3">
-                  <span className="text-2xl font-bold text-foreground">{product.price}</span>
-                  <span className="text-lg text-muted-foreground line-through">
-                    {product.originalPrice}
-                  </span>
-                </div>
-
-                <div className="flex flex-col space-y-3 pt-2">
-                  <Link 
-                    to={`/product/${product.id}`}
-                    className="w-full"
-                  >
-                    <Button variant="outline" className="w-full text-lg py-3 h-auto">
-                      View Details
+                  <div className="flex flex-col space-y-3 pt-2">
+                    <Link 
+                      to={`/product/${product.id}`}
+                      className="w-full"
+                    >
+                      <Button variant="outline" className="w-full text-lg py-3 h-auto">
+                        View Details
+                      </Button>
+                    </Link>
+                    <Button 
+                      className="btn-primary w-full text-lg py-3 h-auto"
+                      onClick={() => handleVirtualTryOn(product.id)}
+                      disabled={isProcessing && selectedProduct === product.id}
+                    >
+                      {isProcessing && selectedProduct === product.id ? "Processing..." : "Try On"}
                     </Button>
-                  </Link>
-                  <Button 
-                    className="btn-primary w-full text-lg py-3 h-auto"
-                    onClick={() => handleVirtualTryOn(product.id)}
-                    disabled={isProcessing && selectedProduct === product.id}
-                  >
-                    {isProcessing && selectedProduct === product.id ? "Processing..." : "Try On"}
-                  </Button>
+                  </div>
                 </div>
-              </div>
-            </Card>
-          ))}
+              </Card>
+            ))}
+          </div>
         </div>
       </div>
     </div>
