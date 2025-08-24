@@ -13,19 +13,11 @@ const VirtualTryOn = () => {
   const { toast } = useToast();
   const [selectedProduct, setSelectedProduct] = useState<number | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<string>("upper_body");
-
   const [userImageFile, setUserImageFile] = useState<File | null>(null);
   const [tryOnResult, setTryOnResult] = useState<string | null>(null);
   const [isWebcamActive, setIsWebcamActive] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  const categories = [
-    { value: "upper_body", label: "Upper Body (Shirts, Tops, Jackets)" },
-    { value: "lower_body", label: "Lower Body (Pants, Skirts)" },
-    { value: "dresses", label: "Dresses" }
-  ];
 
   const handleVirtualTryOn = async (productId: number) => {
     const VIRTUAL_TRYON_API_URL = ""; // TODO: Paste your Azure ML endpoint URL here
@@ -59,8 +51,8 @@ const VirtualTryOn = () => {
       const userImageB64 = await fileToBase64(userImageFile);
       const garmentImageB64 = await urlToBase64(product.images[0]);
       
-      // Use selected category
-      const category = selectedCategory;
+      // Auto-detect category from product
+      const category = product.type;
 
       const requestBody = {
         user_image: userImageB64,
@@ -218,22 +210,6 @@ const VirtualTryOn = () => {
           <div className="max-w-2xl mx-auto bg-card p-6 rounded-lg border">
             <h3 className="text-lg font-semibold mb-4 text-center">Upload Your Photo or Use Webcam</h3>
             
-            {/* Category Selection */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium mb-2">Garment Category</label>
-              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((cat) => (
-                    <SelectItem key={cat.value} value={cat.value}>
-                      {cat.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
 
             <div className="space-y-4">
               {/* File Upload */}

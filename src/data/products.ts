@@ -19,7 +19,7 @@ export type Product = {
   originalPrice: string;
   images: string[]; // First image is the cover
   category: "men" | "women";
-  type: "upper" | "lower";
+  type: "upper_body" | "lower_body" | "dresses"; // Match model categories
   rating: number;
   reviews: number;
   sizes: string[];
@@ -35,7 +35,7 @@ export const products: Product[] = [
     originalPrice: "₹1,999",
     images: [menShirt1],
     category: "men",
-    type: "upper",
+    type: "upper_body",
     rating: 4.5,
     reviews: 128,
     sizes: ["S", "M", "L", "XL"],
@@ -48,7 +48,7 @@ export const products: Product[] = [
     originalPrice: "₹2,499",
     images: [menShirt2],
     category: "men",
-    type: "upper",
+    type: "upper_body",
     rating: 4.6,
     reviews: 156,
     sizes: ["S", "M", "L", "XL"],
@@ -61,7 +61,7 @@ export const products: Product[] = [
     originalPrice: "₹1,499",
     images: [menShirt3],
     category: "men",
-    type: "upper",
+    type: "upper_body",
     rating: 4.3,
     reviews: 94,
     sizes: ["S", "M", "L", "XL"],
@@ -75,7 +75,7 @@ export const products: Product[] = [
     originalPrice: "₹2,999",
     images: [menPants1],
     category: "men",
-    type: "lower",
+    type: "lower_body",
     rating: 4.4,
     reviews: 203,
     sizes: ["28", "30", "32", "34", "36"],
@@ -88,7 +88,7 @@ export const products: Product[] = [
     originalPrice: "₹2,399",
     images: [menPants2],
     category: "men",
-    type: "lower",
+    type: "lower_body",
     rating: 4.2,
     reviews: 87,
     sizes: ["28", "30", "32", "34", "36"],
@@ -102,7 +102,7 @@ export const products: Product[] = [
     originalPrice: "₹2,199",
     images: [womenTop1],
     category: "women",
-    type: "upper",
+    type: "upper_body",
     rating: 4.7,
     reviews: 145,
     sizes: ["XS", "S", "M", "L", "XL"],
@@ -115,7 +115,7 @@ export const products: Product[] = [
     originalPrice: "₹1,699",
     images: [womenTop2],
     category: "women",
-    type: "upper",
+    type: "upper_body",
     rating: 4.5,
     reviews: 112,
     sizes: ["XS", "S", "M", "L", "XL"],
@@ -128,7 +128,7 @@ export const products: Product[] = [
     originalPrice: "₹3,199",
     images: [womenTop3],
     category: "women",
-    type: "upper",
+    type: "dresses",
     rating: 4.8,
     reviews: 189,
     sizes: ["XS", "S", "M", "L", "XL"],
@@ -142,7 +142,7 @@ export const products: Product[] = [
     originalPrice: "₹2,599",
     images: [womenBottom1],
     category: "women",
-    type: "lower",
+    type: "lower_body",
     rating: 4.6,
     reviews: 167,
     sizes: ["24", "26", "28", "30", "32"],
@@ -155,7 +155,7 @@ export const products: Product[] = [
     originalPrice: "₹1,899",
     images: [womenBottom2],
     category: "women",
-    type: "lower",
+    type: "lower_body",
     rating: 4.4,
     reviews: 98,
     sizes: ["XS", "S", "M", "L", "XL"],
