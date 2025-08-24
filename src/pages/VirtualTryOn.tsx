@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingCart, Camera, Upload, Star } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ShoppingCart, Camera, Upload, Star, Video } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
@@ -12,9 +13,19 @@ const VirtualTryOn = () => {
   const { toast } = useToast();
   const [selectedProduct, setSelectedProduct] = useState<number | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>("upper_body");
 
   const [userImageFile, setUserImageFile] = useState<File | null>(null);
   const [tryOnResult, setTryOnResult] = useState<string | null>(null);
+  const [isWebcamActive, setIsWebcamActive] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  const categories = [
+    { value: "upper_body", label: "Upper Body (Shirts, Tops, Jackets)" },
+    { value: "lower_body", label: "Lower Body (Pants, Skirts)" },
+    { value: "dresses", label: "Dresses" }
+  ];
 
   const handleVirtualTryOn = async (productId: number) => {
     const VIRTUAL_TRYON_API_URL = ""; // TODO: Paste your Azure ML endpoint URL here
@@ -48,8 +59,8 @@ const VirtualTryOn = () => {
       const userImageB64 = await fileToBase64(userImageFile);
       const garmentImageB64 = await urlToBase64(product.images[0]);
       
-      // Determine category based on product (simplified logic)
-      const category = 'upper_body'; // Most products are upper body, enhance this logic later
+      // Use selected category
+      const category = selectedCategory;
 
       const requestBody = {
         user_image: userImageB64,
@@ -114,6 +125,57 @@ const VirtualTryOn = () => {
     });
   };
 
+  const startWebcam = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { width: 1280, height: 720 } 
+      });
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        setIsWebcamActive(true);
+      }
+    } catch (error) {
+      toast({
+        title: "Webcam Error",
+        description: "Unable to access webcam. Please check permissions.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const stopWebcam = () => {
+    if (videoRef.current && videoRef.current.srcObject) {
+      const stream = videoRef.current.srcObject as MediaStream;
+      stream.getTracks().forEach(track => track.stop());
+      videoRef.current.srcObject = null;
+      setIsWebcamActive(false);
+    }
+  };
+
+  const captureFromWebcam = () => {
+    if (videoRef.current && canvasRef.current) {
+      const canvas = canvasRef.current;
+      const context = canvas.getContext('2d');
+      if (context) {
+        canvas.width = videoRef.current.videoWidth;
+        canvas.height = videoRef.current.videoHeight;
+        context.drawImage(videoRef.current, 0, 0);
+        
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const file = new File([blob], 'webcam-capture.jpg', { type: 'image/jpeg' });
+            setUserImageFile(file);
+            stopWebcam();
+            toast({
+              title: "Photo captured!",
+              description: "Ready for virtual try-on",
+            });
+          }
+        }, 'image/jpeg', 0.8);
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header - Optimized for TV */}
@@ -153,18 +215,68 @@ const VirtualTryOn = () => {
           </div>
 
           {/* User Image Upload Section */}
-          <div className="max-w-md mx-auto bg-card p-6 rounded-lg border">
-            <h3 className="text-lg font-semibold mb-4 text-center">Upload Your Photo</h3>
+          <div className="max-w-2xl mx-auto bg-card p-6 rounded-lg border">
+            <h3 className="text-lg font-semibold mb-4 text-center">Upload Your Photo or Use Webcam</h3>
+            
+            {/* Category Selection */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium mb-2">Garment Category</label>
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.value} value={cat.value}>
+                      {cat.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="space-y-4">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => setUserImageFile(e.target.files?.[0] || null)}
-                className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/80"
-              />
+              {/* File Upload */}
+              <div>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setUserImageFile(e.target.files?.[0] || null)}
+                  className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/80"
+                />
+              </div>
+
+              {/* Webcam Controls */}
+              <div className="flex gap-2">
+                {!isWebcamActive ? (
+                  <Button onClick={startWebcam} variant="outline" className="flex-1">
+                    <Video className="h-4 w-4 mr-2" />
+                    Start Webcam
+                  </Button>
+                ) : (
+                  <>
+                    <Button onClick={captureFromWebcam} className="flex-1">
+                      <Camera className="h-4 w-4 mr-2" />
+                      Capture Photo
+                    </Button>
+                    <Button onClick={stopWebcam} variant="outline">
+                      Stop Webcam
+                    </Button>
+                  </>
+                )}
+              </div>
+
+              {/* Webcam Video */}
+              {isWebcamActive && (
+                <div className="relative">
+                  <video ref={videoRef} autoPlay className="w-full rounded-lg" />
+                  <canvas ref={canvasRef} className="hidden" />
+                </div>
+              )}
+
               {userImageFile && (
                 <p className="text-sm text-green-600 text-center">
-                  ✓ Photo uploaded: {userImageFile.name}
+                  ✓ Photo ready: {userImageFile.name}
                 </p>
               )}
             </div>

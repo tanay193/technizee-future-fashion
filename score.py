@@ -134,17 +134,28 @@ def pil_to_base64(pil_image):
 def load_model_image_as_b64(model_path):
     """Load a stored model image and convert to base64"""
     # In Azure ML, you'll need to include model images in your deployment package
-    # For now, return a placeholder - you'll replace this with actual model loading
+    # Model images should be in the same directory as score.py
     try:
-        # This would load from your model assets directory
-        model_image_path = os.path.join("assets", "models", model_path)
-        if os.path.exists(model_image_path):
+        # Look for model images in the current directory or models subdirectory
+        possible_paths = [
+            model_path,  # Direct path
+            os.path.join("models", model_path),  # In models folder
+            os.path.join("assets", "models", model_path)  # In assets/models folder
+        ]
+        
+        model_image_path = None
+        for path in possible_paths:
+            if os.path.exists(path):
+                model_image_path = path
+                break
+                
+        if model_image_path and os.path.exists(model_image_path):
             with open(model_image_path, "rb") as f:
                 img_data = f.read()
                 img_b64 = base64.b64encode(img_data).decode()
                 return f"data:image/jpeg;base64,{img_b64}"
         else:
-            raise FileNotFoundError(f"Model image not found: {model_image_path}")
+            raise FileNotFoundError(f"Model image not found in any of these paths: {possible_paths}")
     except Exception as e:
         print(f"Error loading model image: {e}")
         # Return a default/placeholder if model image loading fails

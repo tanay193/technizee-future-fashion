@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Upload, 
   Download, 
@@ -15,33 +16,30 @@ import {
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
-// Import model images
-import femaleModel1 from "@/assets/models/female-model-1.jpg";
-import maleModel1 from "@/assets/models/male-model-1.jpg";
-
 const AIPhotoshoot = () => {
   const { toast } = useToast();
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
-  const [selectedModel, setSelectedModel] = useState<string>("");
+  const [selectedModelType, setSelectedModelType] = useState<string>("");
+  const [selectedBackground, setSelectedBackground] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [generatedImages, setGeneratedImages] = useState<string[]>([]);
 
-  const modelOptions = [
-    { 
-      id: "female-model-1", 
-      name: "Female Model A", 
-      description: "Professional female model for women's clothing",
-      imagePath: "female-model-1.jpg",
-      preview: femaleModel1
-    },
-    { 
-      id: "male-model-1", 
-      name: "Male Model A", 
-      description: "Professional male model for men's clothing",
-      imagePath: "male-model-1.jpg", 
-      preview: maleModel1
-    },
+  const modelTypes = [
+    { value: "indian-female", label: "Indian Female" },
+    { value: "indian-male", label: "Indian Male" }
   ];
+
+  const backgroundStyles = [
+    { value: "nature", label: "Nature" },
+    { value: "urban", label: "Urban" },
+    { value: "studio", label: "Studio" }
+  ];
+
+  // Function to get model image path based on selection
+  const getModelImagePath = (modelType: string, background: string) => {
+    if (!modelType || !background) return null;
+    return `${modelType}-${background}.jpg`;
+  };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -79,10 +77,10 @@ const AIPhotoshoot = () => {
       return;
     }
 
-    if (!selectedModel) {
+    if (!selectedModelType || !selectedBackground) {
       toast({
         title: "Selection incomplete",
-        description: "Please select a model.",
+        description: "Please select both model type and background style.",
         variant: "destructive",
       });
       return;
@@ -91,15 +89,15 @@ const AIPhotoshoot = () => {
     setIsProcessing(true);
 
     try {
-      // Find selected model info
-      const modelInfo = modelOptions.find(m => m.id === selectedModel);
-      if (!modelInfo) throw new Error("Invalid model selection");
+      // Get model image path based on selections
+      const modelImagePath = getModelImagePath(selectedModelType, selectedBackground);
+      if (!modelImagePath) throw new Error("Invalid model selection");
 
       // Determine category based on garment (simplified logic for now)
       const category = "upper_body"; // You can enhance this logic later
 
       const requestBody = {
-        model_image_path: modelInfo.imagePath,
+        model_image_path: modelImagePath,
         garment_image: uploadedImage, // Already base64 from file upload
         category: category,
         has_sleeves: null // Let model auto-detect
@@ -216,36 +214,38 @@ const AIPhotoshoot = () => {
               </div>
             </div>
 
-            {/* Model Selection */}
+            {/* Model Type Selection */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Choose Model</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {modelOptions.map((model) => (
-                  <Card 
-                    key={model.id}
-                    className={`cursor-pointer transition-all ${
-                      selectedModel === model.id 
-                        ? 'ring-2 ring-primary bg-primary/5' 
-                        : 'hover:bg-accent'
-                    }`}
-                    onClick={() => setSelectedModel(model.id)}
-                  >
-                    <CardContent className="p-4">
-                      <div className="flex items-center space-x-3">
-                        <img 
-                          src={model.preview} 
-                          alt={model.name}
-                          className="w-16 h-20 object-cover rounded border"
-                        />
-                        <div className="text-left">
-                          <h4 className="font-medium">{model.name}</h4>
-                          <p className="text-sm text-muted-foreground mt-1">{model.description}</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+              <Label>Model Type</Label>
+              <Select value={selectedModelType} onValueChange={setSelectedModelType}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select model type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {modelTypes.map((type) => (
+                    <SelectItem key={type.value} value={type.value}>
+                      {type.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Background Style Selection */}
+            <div className="space-y-4">
+              <Label>Background Style</Label>
+              <Select value={selectedBackground} onValueChange={setSelectedBackground}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select background style" />
+                </SelectTrigger>
+                <SelectContent>
+                  {backgroundStyles.map((style) => (
+                    <SelectItem key={style.value} value={style.value}>
+                      {style.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Note: Background selection removed since we're using the model's background */}
@@ -253,7 +253,7 @@ const AIPhotoshoot = () => {
             <Button 
               className="w-full btn-primary mt-6"
               onClick={handleGeneratePhotoshoot}
-              disabled={!uploadedImage || !selectedModel || isProcessing}
+              disabled={!uploadedImage || !selectedModelType || !selectedBackground || isProcessing}
             >
               {isProcessing ? (
                 <>
