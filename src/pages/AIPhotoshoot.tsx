@@ -21,6 +21,7 @@ const AIPhotoshoot = () => {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [selectedModelType, setSelectedModelType] = useState<string>("");
   const [selectedBackground, setSelectedBackground] = useState<string>("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [generatedImages, setGeneratedImages] = useState<string[]>([]);
 
@@ -35,10 +36,32 @@ const AIPhotoshoot = () => {
     { value: "studio", label: "Studio" }
   ];
 
-  // Function to get model image path based on selection
-  const getModelImagePath = (modelType: string, background: string) => {
-    if (!modelType || !background) return null;
-    return `${modelType}-${background}.jpg`;
+  const categories = [
+    { value: "upper_body", label: "Upper Body (Shirts, Tops, Jackets)" },
+    { value: "lower_body", label: "Lower Body (Pants, Skirts)" },
+    { value: "dresses", label: "Dresses" }
+  ];
+
+  // Function to load model image as base64
+  const loadModelImageAsBase64 = async (modelType: string, background: string): Promise<string> => {
+    if (!modelType || !background) throw new Error("Invalid model selection");
+    
+    const imagePath = `/src/assets/models/${modelType}-${background}.jpg`;
+    
+    try {
+      const response = await fetch(imagePath);
+      if (!response.ok) throw new Error(`Could not load model image: ${imagePath}`);
+      
+      const blob = await response.blob();
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    } catch (error) {
+      throw new Error(`Failed to load model image: ${imagePath}`);
+    }
   };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -77,10 +100,10 @@ const AIPhotoshoot = () => {
       return;
     }
 
-    if (!selectedModelType || !selectedBackground) {
+    if (!selectedModelType || !selectedBackground || !selectedCategory) {
       toast({
         title: "Selection incomplete",
-        description: "Please select both model type and background style.",
+        description: "Please select model type, background style, and category.",
         variant: "destructive",
       });
       return;
@@ -89,17 +112,13 @@ const AIPhotoshoot = () => {
     setIsProcessing(true);
 
     try {
-      // Get model image path based on selections
-      const modelImagePath = getModelImagePath(selectedModelType, selectedBackground);
-      if (!modelImagePath) throw new Error("Invalid model selection");
-
-      // Determine category based on garment (simplified logic for now)
-      const category = "upper_body"; // You can enhance this logic later
+      // Load model image as base64 from frontend assets
+      const modelImageBase64 = await loadModelImageAsBase64(selectedModelType, selectedBackground);
 
       const requestBody = {
-        model_image_path: modelImagePath,
+        model_image: modelImageBase64, // Send as base64 from frontend
         garment_image: uploadedImage, // Already base64 from file upload
-        category: category,
+        category: selectedCategory, // Use selected category
         has_sleeves: null // Let model auto-detect
       };
 
@@ -248,12 +267,29 @@ const AIPhotoshoot = () => {
               </Select>
             </div>
 
+            {/* Category Selection */}
+            <div className="space-y-4">
+              <Label>Garment Category</Label>
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.value} value={cat.value}>
+                      {cat.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             {/* Note: Background selection removed since we're using the model's background */}
 
             <Button 
               className="w-full btn-primary mt-6"
               onClick={handleGeneratePhotoshoot}
-              disabled={!uploadedImage || !selectedModelType || !selectedBackground || isProcessing}
+              disabled={!uploadedImage || !selectedModelType || !selectedBackground || !selectedCategory || isProcessing}
             >
               {isProcessing ? (
                 <>

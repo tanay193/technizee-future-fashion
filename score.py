@@ -47,8 +47,8 @@ def init():
 
 def run(raw_data):
     """
-    This function is called for every invocation of the endpoint to perform the actual scoring/prediction.
-    In the base image this runs the trained model against the provided input data in the JSON string.
+    Processes incoming request and performs virtual try-on inference.
+    Expects JSON with fields: user_image/model_image, garment_image, category, has_sleeves
     """
     try:
         if not model_loaded:
@@ -59,17 +59,15 @@ def run(raw_data):
         
         # Handle different input formats
         if "user_image" in data and "garment_image" in data:
-            # Direct base64 images (from VirtualTryOn)
+            # Virtual Try-On format - user uploaded image
             user_b64 = data["user_image"]
             garment_b64 = data["garment_image"]
-        elif "model_image_path" in data and "garment_image" in data:
-            # Model path + garment image (from AIPhotoshoot)
-            model_path = data["model_image_path"]
+        elif "model_image" in data and "garment_image" in data:
+            # AI Photoshoot format - model image sent as base64 from frontend
+            user_b64 = data["model_image"]  # Use model image as the "user"
             garment_b64 = data["garment_image"]
-            # Load model image from your stored assets
-            user_b64 = load_model_image_as_b64(model_path)
         else:
-            return json.dumps({"error": "Invalid input format. Expected user_image+garment_image or model_image_path+garment_image"})
+            return json.dumps({"error": "Invalid input format. Expected user_image+garment_image or model_image+garment_image"})
         
         # Decode images
         user_pil = base64_to_pil(user_b64)
@@ -131,35 +129,7 @@ def pil_to_base64(pil_image):
     img_str = base64.b64encode(buffer.getvalue()).decode()
     return f"data:image/jpeg;base64,{img_str}"
 
-def load_model_image_as_b64(model_path):
-    """Load a stored model image and convert to base64"""
-    # In Azure ML, you'll need to include model images in your deployment package
-    # Model images should be in the same directory as score.py
-    try:
-        # Look for model images in the current directory or models subdirectory
-        possible_paths = [
-            model_path,  # Direct path
-            os.path.join("models", model_path),  # In models folder
-            os.path.join("assets", "models", model_path)  # In assets/models folder
-        ]
-        
-        model_image_path = None
-        for path in possible_paths:
-            if os.path.exists(path):
-                model_image_path = path
-                break
-                
-        if model_image_path and os.path.exists(model_image_path):
-            with open(model_image_path, "rb") as f:
-                img_data = f.read()
-                img_b64 = base64.b64encode(img_data).decode()
-                return f"data:image/jpeg;base64,{img_b64}"
-        else:
-            raise FileNotFoundError(f"Model image not found in any of these paths: {possible_paths}")
-    except Exception as e:
-        print(f"Error loading model image: {e}")
-        # Return a default/placeholder if model image loading fails
-        raise Exception(f"Could not load model image: {model_path}")
+# Model image loading function removed - now handled by frontend base64 approach
 
 # Global variable to track model loading status
 model_loaded = False
