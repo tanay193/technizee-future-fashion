@@ -80,7 +80,7 @@ const AIPhotoshoot = () => {
   };
 
   const handleGeneratePhotoshoot = async () => {
-    const TRYON_API_URL = ""; // TODO: Paste your Azure ML endpoint URL here (same as Virtual Try-On)
+    const TRYON_API_URL = "https://idm-vton-endpoint.eastus.inference.ml.azure.com/score";
     
     if (!TRYON_API_URL) {
       toast({

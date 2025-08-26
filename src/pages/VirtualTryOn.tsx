@@ -20,7 +20,7 @@ const VirtualTryOn = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const handleVirtualTryOn = async (productId: number) => {
-    const VIRTUAL_TRYON_API_URL = ""; // TODO: Paste your Azure ML endpoint URL here
+    const VIRTUAL_TRYON_API_URL = "https://idm-vton-endpoint.eastus.inference.ml.azure.com/score";
     
     if (!VIRTUAL_TRYON_API_URL) {
       toast({
