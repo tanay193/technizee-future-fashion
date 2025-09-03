@@ -20,8 +20,8 @@ const VirtualTryOn = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const handleVirtualTryOn = async (productId: number) => {
-    const VIRTUAL_TRYON_API_URL = "https://idm-vton-endpoint.eastus.inference.ml.azure.com/score";
-    
+    const VIRTUAL_TRYON_API_URL = "http://localhost:5000/api/virtual-tryon";
+
     if (!VIRTUAL_TRYON_API_URL) {
       toast({
         title: "API not configured",
@@ -50,7 +50,7 @@ const VirtualTryOn = () => {
       // Convert images to base64
       const userImageB64 = await fileToBase64(userImageFile);
       const garmentImageB64 = await urlToBase64(product.images[0]);
-      
+
       // Auto-detect category from product
       const category = product.type;
 
@@ -74,7 +74,7 @@ const VirtualTryOn = () => {
       }
 
       const data = await response.json();
-      
+
       if (data.success && data.result_image) {
         setTryOnResult(data.result_image);
         toast({
@@ -119,8 +119,8 @@ const VirtualTryOn = () => {
 
   const startWebcam = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { width: 1280, height: 720 } 
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { width: 1280, height: 720 }
       });
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
@@ -152,7 +152,7 @@ const VirtualTryOn = () => {
         canvas.width = videoRef.current.videoWidth;
         canvas.height = videoRef.current.videoHeight;
         context.drawImage(videoRef.current, 0, 0);
-        
+
         canvas.toBlob((blob) => {
           if (blob) {
             const file = new File([blob], 'webcam-capture.jpg', { type: 'image/jpeg' });
@@ -175,9 +175,9 @@ const VirtualTryOn = () => {
         <div className="container mx-auto px-12 py-8">
           <div className="flex items-center justify-between">
             <Link to="/" className="flex items-center space-x-4">
-              <img 
-                src="/lovable-uploads/676f11a3-0467-482a-bd66-aaf29c1ea20d.png" 
-                alt="Technizee Logo" 
+              <img
+                src="/lovable-uploads/676f11a3-0467-482a-bd66-aaf29c1ea20d.png"
+                alt="Technizee Logo"
                 className="h-16 w-auto"
               />
             </Link>
@@ -201,7 +201,7 @@ const VirtualTryOn = () => {
               Virtual Try-On Store
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Experience the future of fashion with our AI-powered virtual try-on technology. 
+              Experience the future of fashion with our AI-powered virtual try-on technology.
               See how clothes look on you before you buy!
             </p>
           </div>
@@ -209,7 +209,7 @@ const VirtualTryOn = () => {
           {/* User Image Upload Section */}
           <div className="max-w-2xl mx-auto bg-card p-6 rounded-lg border">
             <h3 className="text-lg font-semibold mb-4 text-center">Upload Your Photo or Use Webcam</h3>
-            
+
 
             <div className="space-y-4">
               {/* File Upload */}
@@ -262,12 +262,12 @@ const VirtualTryOn = () => {
           {tryOnResult && (
             <div className="max-w-md mx-auto bg-card p-6 rounded-lg border">
               <h3 className="text-lg font-semibold mb-4 text-center">Your Virtual Try-On Result</h3>
-              <img 
-                src={tryOnResult} 
-                alt="Virtual try-on result" 
+              <img
+                src={tryOnResult}
+                alt="Virtual try-on result"
                 className="w-full rounded-lg shadow-lg"
               />
-              <Button 
+              <Button
                 className="w-full mt-4"
                 onClick={() => {
                   const link = document.createElement('a');
@@ -286,8 +286,8 @@ const VirtualTryOn = () => {
             {products.map((product) => (
               <Card key={product.id} className="p-6 hover:shadow-glow hover:scale-105 transition-all duration-300">
                 <div className="aspect-[3/4] bg-muted rounded-lg mb-6 relative overflow-hidden">
-                  <img 
-                    src={product.images[0]} 
+                  <img
+                    src={product.images[0]}
                     alt={product.name}
                     className="w-full h-full object-cover"
                   />
@@ -295,10 +295,10 @@ const VirtualTryOn = () => {
                     Sale
                   </Badge>
                 </div>
-                
+
                 <div className="space-y-4">
                   <h3 className="text-xl font-semibold text-foreground">{product.name}</h3>
-                  
+
                   <div className="flex items-center space-x-3">
                     <div className="flex items-center">
                       <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
@@ -316,7 +316,7 @@ const VirtualTryOn = () => {
                   </div>
 
                   <div className="flex flex-col space-y-3 pt-2">
-                    <Link 
+                    <Link
                       to={`/product/${product.id}`}
                       className="w-full"
                     >
@@ -324,7 +324,7 @@ const VirtualTryOn = () => {
                         View Details
                       </Button>
                     </Link>
-                    <Button 
+                    <Button
                       className="btn-primary w-full text-lg py-3 h-auto"
                       onClick={() => handleVirtualTryOn(product.id)}
                       disabled={isProcessing && selectedProduct === product.id}

@@ -4,10 +4,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { 
-  Upload, 
-  Download, 
-  ArrowLeft, 
+import {
+  Upload,
+  Download,
+  ArrowLeft,
   Wand2,
   Camera,
   Shirt,
@@ -45,13 +45,13 @@ const AIPhotoshoot = () => {
   // Function to load model image as base64
   const loadModelImageAsBase64 = async (modelType: string, background: string): Promise<string> => {
     if (!modelType || !background) throw new Error("Invalid model selection");
-    
+
     const imagePath = `/src/assets/models/${modelType}-${background}.jpg`;
-    
+
     try {
       const response = await fetch(imagePath);
       if (!response.ok) throw new Error(`Could not load model image: ${imagePath}`);
-      
+
       const blob = await response.blob();
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -80,16 +80,17 @@ const AIPhotoshoot = () => {
   };
 
   const handleGeneratePhotoshoot = async () => {
-    const TRYON_API_URL = "https://idm-vton-endpoint.eastus.inference.ml.azure.com/score";
-    
+    const TRYON_API_URL = "http://localhost:5000/api/virtual-tryon";
+
     if (!TRYON_API_URL) {
       toast({
-        title: "API not configured", 
+        title: "API not configured",
         description: "Please provide the Try-On API URL to enable photoshoot generation.",
         variant: "destructive",
       });
       return;
     }
+
 
     if (!uploadedImage) {
       toast({
@@ -135,7 +136,7 @@ const AIPhotoshoot = () => {
       }
 
       const data = await apiResponse.json();
-      
+
       if (data.success && data.result_image) {
         setGeneratedImages([data.result_image]);
         toast({
@@ -166,9 +167,9 @@ const AIPhotoshoot = () => {
           <div className="flex items-center justify-between">
             <Link to="/virtual-tryon" className="flex items-center space-x-2">
               <ArrowLeft className="h-4 w-4" />
-              <img 
-                src="/lovable-uploads/676f11a3-0467-482a-bd66-aaf29c1ea20d.png" 
-                alt="Technizee Logo" 
+              <img
+                src="/lovable-uploads/676f11a3-0467-482a-bd66-aaf29c1ea20d.png"
+                alt="Technizee Logo"
                 className="h-8 w-auto"
               />
             </Link>
@@ -185,7 +186,7 @@ const AIPhotoshoot = () => {
             AI Product Photoshoot
           </h1>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Transform your garment images into professional model photoshoots. 
+            Transform your garment images into professional model photoshoots.
             Upload a garment image and select a model to see how it looks.
           </p>
         </div>
@@ -203,9 +204,9 @@ const AIPhotoshoot = () => {
               <Label>Product Image</Label>
               <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center">
                 {uploadedImage ? (
-                  <img 
-                    src={uploadedImage} 
-                    alt="Uploaded product" 
+                  <img
+                    src={uploadedImage}
+                    alt="Uploaded product"
                     className="max-w-full h-48 object-contain mx-auto mb-4"
                   />
                 ) : (
@@ -214,7 +215,7 @@ const AIPhotoshoot = () => {
                     <p className="text-muted-foreground">Drop your garment image here</p>
                   </div>
                 )}
-                
+
                 <Input
                   type="file"
                   accept="image/*"
@@ -286,7 +287,7 @@ const AIPhotoshoot = () => {
 
             {/* Note: Background selection removed since we're using the model's background */}
 
-            <Button 
+            <Button
               className="w-full btn-primary mt-6"
               onClick={handleGeneratePhotoshoot}
               disabled={!uploadedImage || !selectedModelType || !selectedBackground || !selectedCategory || isProcessing}
