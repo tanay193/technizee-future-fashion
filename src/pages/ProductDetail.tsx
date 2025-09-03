@@ -23,8 +23,8 @@ const ProductDetail = () => {
   const [showTryOnModal, setShowTryOnModal] = useState(false);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   
-  // Set this to your API endpoint when ready
-  const TRYON_API_URL = "";
+  // Backend proxy endpoint
+  const TRYON_API_URL = "http://localhost:5000/api/virtual-tryon";
 
   // Find product by route id
   const product = products.find((p) => p.id === Number(id));
@@ -47,50 +47,71 @@ const ProductDetail = () => {
     );
   }
 
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const urlToBase64 = async (url: string): Promise<string> => {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  };
+
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      const userImage = e.target?.result as string;
-      setUploadedImage(userImage);
+    const userImageBase64 = await fileToBase64(file);
+    setUploadedImage(userImageBase64);
 
-      try {
-        if (!TRYON_API_URL) {
-          toast({
-            title: "Image uploaded",
-            description: "Add your API URL to enable virtual try-on.",
-          });
-          return;
-        }
+    try {
+      toast({
+        title: "Processing virtual try-on...",
+        description: "Please wait while we generate your try-on result.",
+      });
 
-        const formData = new FormData();
-        formData.append("user_image", file);
-        formData.append("product_image_url", product.images[0]);
-        formData.append("product_id", String(product.id));
+      const garmentImageBase64 = await urlToBase64(product.images[0]);
 
-        const res = await fetch(TRYON_API_URL, {
-          method: "POST",
-          body: formData,
-        });
+      const response = await fetch(TRYON_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_image: userImageBase64,
+          garment_image: garmentImageBase64,
+        }),
+      });
 
-        if (!res.ok) throw new Error("Try-on request failed");
-
-        toast({
-          title: "Processing virtual try-on...",
-          description: "We'll show the result here once it's ready.",
-        });
-      } catch (err) {
-        toast({
-          title: "Try-on failed",
-          description: "Please check the API and try again.",
-          variant: "destructive",
-        });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-    };
 
-    reader.readAsDataURL(file);
+      const result = await response.json();
+      
+      toast({
+        title: "Virtual try-on completed!",
+        description: "Your try-on result is ready.",
+      });
+
+    } catch (error) {
+      console.error("Virtual try-on error:", error);
+      toast({
+        title: "Try-on failed",
+        description: "Please check your connection and try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleCameraCapture = () => {
