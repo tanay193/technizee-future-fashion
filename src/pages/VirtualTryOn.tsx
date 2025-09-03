@@ -146,12 +146,15 @@ const VirtualTryOn = () => {
 
   const captureFromWebcam = () => {
     if (videoRef.current && canvasRef.current) {
+      const video = videoRef.current;
       const canvas = canvasRef.current;
       const context = canvas.getContext('2d');
-      if (context) {
-        canvas.width = videoRef.current.videoWidth;
-        canvas.height = videoRef.current.videoHeight;
-        context.drawImage(videoRef.current, 0, 0);
+      
+      // Ensure video is loaded and has dimensions
+      if (context && video.videoWidth > 0 && video.videoHeight > 0) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0);
 
         canvas.toBlob((blob) => {
           if (blob) {
@@ -164,6 +167,12 @@ const VirtualTryOn = () => {
             });
           }
         }, 'image/jpeg', 0.8);
+      } else {
+        toast({
+          title: "Capture failed",
+          description: "Please wait for camera to fully load",
+          variant: "destructive",
+        });
       }
     }
   };

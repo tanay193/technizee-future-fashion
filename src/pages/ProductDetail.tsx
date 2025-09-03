@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -24,6 +24,9 @@ const ProductDetail = () => {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [tryOnResult, setTryOnResult] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isWebcamActive, setIsWebcamActive] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   
   // Backend proxy endpoint
   const TRYON_API_URL = "http://localhost:5000/api/virtual-tryon";
@@ -126,12 +129,110 @@ const ProductDetail = () => {
     }
   };
 
-  const handleCameraCapture = () => {
-    // Here you would implement camera capture functionality
-    toast({
-      title: "Camera feature",
-      description: "Camera functionality will be implemented with API integration.",
-    });
+  const startWebcam = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { width: 1280, height: 720 }
+      });
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        setIsWebcamActive(true);
+      }
+    } catch (error) {
+      toast({
+        title: "Webcam Error",
+        description: "Unable to access webcam. Please check permissions.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const stopWebcam = () => {
+    if (videoRef.current && videoRef.current.srcObject) {
+      const stream = videoRef.current.srcObject as MediaStream;
+      stream.getTracks().forEach(track => track.stop());
+      videoRef.current.srcObject = null;
+      setIsWebcamActive(false);
+    }
+  };
+
+  const captureFromWebcam = () => {
+    if (videoRef.current && canvasRef.current) {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      const context = canvas.getContext('2d');
+      
+      // Ensure video is loaded and has dimensions
+      if (context && video.videoWidth > 0 && video.videoHeight > 0) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0);
+
+        canvas.toBlob(async (blob) => {
+          if (blob) {
+            const file = new File([blob], 'webcam-capture.jpg', { type: 'image/jpeg' });
+            const capturedImageBase64 = await fileToBase64(file);
+            setUploadedImage(capturedImageBase64);
+            setTryOnResult(null);
+            setIsProcessing(true);
+            stopWebcam();
+
+            // Automatically process try-on with captured image
+            try {
+              toast({
+                title: "Processing virtual try-on...",
+                description: "Please wait while we generate your try-on result.",
+              });
+
+              const garmentImageBase64 = await urlToBase64(product.images[0]);
+
+              const response = await fetch(TRYON_API_URL, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  user_image: capturedImageBase64,
+                  garment_image: garmentImageBase64,
+                }),
+              });
+
+              if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+              }
+
+              const result = await response.json();
+              
+              if (result.result_image) {
+                setTryOnResult(result.result_image);
+              }
+              
+              setIsProcessing(false);
+              
+              toast({
+                title: "Virtual try-on completed!",
+                description: "Your try-on result is ready.",
+              });
+
+            } catch (error) {
+              console.error("Virtual try-on error:", error);
+              setIsProcessing(false);
+              toast({
+                title: "Try-on failed",
+                description: "Please check your connection and try again.",
+                variant: "destructive",
+              });
+            }
+          }
+        }, 'image/jpeg', 0.8);
+      } else {
+        toast({
+          title: "Capture failed",
+          description: "Please wait for camera to fully load",
+          variant: "destructive",
+        });
+      }
+    }
   };
 
   const VirtualTryOnModal = () => (
@@ -185,12 +286,32 @@ const ProductDetail = () => {
                 </Button>
               </label>
               
-              <div className="mt-4">
-                <Button onClick={handleCameraCapture} className="btn-primary">
-                  <Camera className="h-4 w-4 mr-2" />
-                  Use Camera
-                </Button>
+              <div className="mt-4 space-y-2">
+                {!isWebcamActive ? (
+                  <Button onClick={startWebcam} className="btn-primary">
+                    <Camera className="h-4 w-4 mr-2" />
+                    Use Camera
+                  </Button>
+                ) : (
+                  <div className="space-y-2">
+                    <Button onClick={captureFromWebcam} className="btn-primary">
+                      <Camera className="h-4 w-4 mr-2" />
+                      Capture Photo
+                    </Button>
+                    <Button onClick={stopWebcam} variant="outline">
+                      Stop Camera
+                    </Button>
+                  </div>
+                )}
               </div>
+
+              {/* Webcam Video */}
+              {isWebcamActive && (
+                <div className="mt-4">
+                  <video ref={videoRef} autoPlay className="w-full rounded-lg" />
+                  <canvas ref={canvasRef} className="hidden" />
+                </div>
+              )}
             </div>
           </div>
 
