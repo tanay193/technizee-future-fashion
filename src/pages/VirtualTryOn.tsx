@@ -254,7 +254,14 @@ const VirtualTryOn = () => {
               {/* Webcam Video */}
               {isWebcamActive && (
                 <div className="relative">
-                  <video ref={videoRef} autoPlay className="w-full rounded-lg" />
+                  <video 
+                    ref={videoRef} 
+                    autoPlay 
+                    muted 
+                    playsInline
+                    className="w-full rounded-lg mirror-video"
+                    style={{ transform: 'scaleX(-1)' }}
+                  />
                   <canvas ref={canvasRef} className="hidden" />
                 </div>
               )}

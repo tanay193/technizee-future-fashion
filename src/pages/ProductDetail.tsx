@@ -308,7 +308,14 @@ const ProductDetail = () => {
               {/* Webcam Video */}
               {isWebcamActive && (
                 <div className="mt-4">
-                  <video ref={videoRef} autoPlay className="w-full rounded-lg" />
+                  <video 
+                    ref={videoRef} 
+                    autoPlay 
+                    muted 
+                    playsInline
+                    className="w-full rounded-lg"
+                    style={{ transform: 'scaleX(-1)' }}
+                  />
                   <canvas ref={canvasRef} className="hidden" />
                 </div>
               )}
