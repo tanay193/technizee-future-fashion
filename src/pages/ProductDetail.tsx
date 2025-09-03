@@ -22,6 +22,8 @@ const ProductDetail = () => {
   const [selectedColor, setSelectedColor] = useState("");
   const [showTryOnModal, setShowTryOnModal] = useState(false);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [tryOnResult, setTryOnResult] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
   
   // Backend proxy endpoint
   const TRYON_API_URL = "http://localhost:5000/api/virtual-tryon";
@@ -73,6 +75,8 @@ const ProductDetail = () => {
 
     const userImageBase64 = await fileToBase64(file);
     setUploadedImage(userImageBase64);
+    setTryOnResult(null);
+    setIsProcessing(true);
 
     try {
       toast({
@@ -99,6 +103,13 @@ const ProductDetail = () => {
 
       const result = await response.json();
       
+      // Set the result image
+      if (result.result_image) {
+        setTryOnResult(result.result_image);
+      }
+      
+      setIsProcessing(false);
+      
       toast({
         title: "Virtual try-on completed!",
         description: "Your try-on result is ready.",
@@ -106,6 +117,7 @@ const ProductDetail = () => {
 
     } catch (error) {
       console.error("Virtual try-on error:", error);
+      setIsProcessing(false);
       toast({
         title: "Try-on failed",
         description: "Please check your connection and try again.",
@@ -185,18 +197,38 @@ const ProductDetail = () => {
           <div className="space-y-4">
             <h3 className="font-semibold">Try-On Result</h3>
             <div className="border border-border rounded-lg p-8 text-center bg-muted/30">
-              {uploadedImage ? (
+              {!uploadedImage ? (
+                <div className="h-40 flex items-center justify-center">
+                  <p className="text-muted-foreground">Upload an image to see virtual try-on</p>
+                </div>
+              ) : tryOnResult ? (
                 <div className="space-y-4">
                   <p className="text-sm text-muted-foreground">
-                    Virtual try-on will appear here
+                    Your try-on result:
+                  </p>
+                  <img 
+                    src={tryOnResult} 
+                    alt="Virtual try-on result" 
+                    className="max-w-full h-40 object-contain mx-auto rounded"
+                  />
+                </div>
+              ) : isProcessing ? (
+                <div className="space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    Processing your virtual try-on...
                   </p>
                   <div className="h-40 bg-muted rounded flex items-center justify-center">
-                    <p className="text-muted-foreground">Processing...</p>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                   </div>
                 </div>
               ) : (
-                <div className="h-40 flex items-center justify-center">
-                  <p className="text-muted-foreground">Upload an image to see virtual try-on</p>
+                <div className="space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    Click "Choose Image" to start virtual try-on
+                  </p>
+                  <div className="h-40 bg-muted rounded flex items-center justify-center">
+                    <p className="text-muted-foreground">Ready to process</p>
+                  </div>
                 </div>
               )}
             </div>
