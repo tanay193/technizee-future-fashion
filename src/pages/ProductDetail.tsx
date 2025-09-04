@@ -25,6 +25,7 @@ const ProductDetail = () => {
   const [tryOnResult, setTryOnResult] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isWebcamActive, setIsWebcamActive] = useState(false);
+  const [countdown, setCountdown] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   
@@ -137,6 +138,20 @@ const ProductDetail = () => {
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         setIsWebcamActive(true);
+        
+        // Start 5-second countdown
+        setCountdown(5);
+        const timer = setInterval(() => {
+          setCountdown((prev) => {
+            if (prev <= 1) {
+              clearInterval(timer);
+              // Auto-capture after countdown
+              setTimeout(() => captureFromWebcam(), 100);
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
       }
     } catch (error) {
       toast({
@@ -257,57 +272,46 @@ const ProductDetail = () => {
             </p>
             
             <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center">
-              {uploadedImage ? (
-                <img 
-                  src={uploadedImage} 
-                  alt="Uploaded" 
-                  className="max-w-full h-40 object-contain mx-auto mb-4"
-                />
-              ) : (
-                <div className="space-y-4">
-                  <Upload className="h-12 w-12 mx-auto text-muted-foreground" />
-                  <p className="text-muted-foreground">Drop your image here or click to upload</p>
-                </div>
-              )}
-              
-              <Input
-                type="file"
-                accept="image/*"
-                onChange={handleFileUpload}
-                className="hidden"
-                id="image-upload"
-              />
-              <label htmlFor="image-upload">
-                <Button variant="outline" className="mt-4" asChild>
-                  <span className="cursor-pointer">
-                    <Upload className="h-4 w-4 mr-2" />
-                    Choose Image
-                  </span>
-                </Button>
-              </label>
-              
-              <div className="mt-4 space-y-2">
-                {!isWebcamActive ? (
-                  <Button onClick={startWebcam} className="btn-primary">
+              {!isWebcamActive ? (
+                // Upload interface
+                <>
+                  {uploadedImage ? (
+                    <img 
+                      src={uploadedImage} 
+                      alt="Uploaded" 
+                      className="max-w-full h-40 object-contain mx-auto mb-4"
+                    />
+                  ) : (
+                    <div className="space-y-4">
+                      <Upload className="h-12 w-12 mx-auto text-muted-foreground" />
+                      <p className="text-muted-foreground">Drop your image here or click to upload</p>
+                    </div>
+                  )}
+                  
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                    id="image-upload"
+                  />
+                  <label htmlFor="image-upload">
+                    <Button variant="outline" className="mt-4 mr-2" asChild>
+                      <span className="cursor-pointer">
+                        <Upload className="h-4 w-4 mr-2" />
+                        Choose Image
+                      </span>
+                    </Button>
+                  </label>
+                  
+                  <Button onClick={startWebcam} className="btn-primary mt-4">
                     <Camera className="h-4 w-4 mr-2" />
                     Use Camera
                   </Button>
-                ) : (
-                  <div className="space-y-2">
-                    <Button onClick={captureFromWebcam} className="btn-primary">
-                      <Camera className="h-4 w-4 mr-2" />
-                      Capture Photo
-                    </Button>
-                    <Button onClick={stopWebcam} variant="outline">
-                      Stop Camera
-                    </Button>
-                  </div>
-                )}
-              </div>
-
-              {/* Webcam Video */}
-              {isWebcamActive && (
-                <div className="mt-4">
+                </>
+              ) : (
+                // Webcam interface with countdown
+                <div className="relative">
                   <video 
                     ref={videoRef} 
                     autoPlay 
@@ -316,7 +320,21 @@ const ProductDetail = () => {
                     className="w-full rounded-lg"
                     style={{ transform: 'scaleX(-1)' }}
                   />
+                  {countdown > 0 && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-lg">
+                      <div className="text-white text-6xl font-bold animate-pulse">
+                        {countdown}
+                      </div>
+                    </div>
+                  )}
                   <canvas ref={canvasRef} className="hidden" />
+                  <Button 
+                    onClick={stopWebcam} 
+                    variant="outline" 
+                    className="mt-4"
+                  >
+                    Stop Camera
+                  </Button>
                 </div>
               )}
             </div>

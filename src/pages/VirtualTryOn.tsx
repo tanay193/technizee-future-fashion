@@ -16,6 +16,7 @@ const VirtualTryOn = () => {
   const [userImageFile, setUserImageFile] = useState<File | null>(null);
   const [tryOnResult, setTryOnResult] = useState<string | null>(null);
   const [isWebcamActive, setIsWebcamActive] = useState(false);
+  const [countdown, setCountdown] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -125,6 +126,20 @@ const VirtualTryOn = () => {
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         setIsWebcamActive(true);
+        
+        // Start 5-second countdown
+        setCountdown(5);
+        const timer = setInterval(() => {
+          setCountdown((prev) => {
+            if (prev <= 1) {
+              clearInterval(timer);
+              // Auto-capture after countdown
+              setTimeout(() => captureFromWebcam(), 100);
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
       }
     } catch (error) {
       toast({
@@ -262,6 +277,13 @@ const VirtualTryOn = () => {
                     className="w-full rounded-lg mirror-video"
                     style={{ transform: 'scaleX(-1)' }}
                   />
+                  {countdown > 0 && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-lg">
+                      <div className="text-white text-6xl font-bold animate-pulse">
+                        {countdown}
+                      </div>
+                    </div>
+                  )}
                   <canvas ref={canvasRef} className="hidden" />
                 </div>
               )}
