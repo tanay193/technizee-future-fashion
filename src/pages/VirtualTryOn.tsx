@@ -18,6 +18,8 @@ const VirtualTryOn = () => {
   const [isWebcamActive, setIsWebcamActive] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [countdown, setCountdown] = useState<number | null>(null);
+
 
   const handleVirtualTryOn = async (productId: number) => {
     const VIRTUAL_TRYON_API_URL = "http://localhost:5000/api/virtual-tryon";
@@ -124,7 +126,22 @@ const VirtualTryOn = () => {
       });
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
+        await videoRef.current.play(); // 👈 ensure video actually starts
         setIsWebcamActive(true);
+
+        // Start countdown
+        let seconds = 5;
+        setCountdown(seconds);
+        const interval = setInterval(() => {
+          seconds -= 1;
+          if (seconds > 0) {
+            setCountdown(seconds);
+          } else {
+            clearInterval(interval);
+            setCountdown(null);
+            captureFromWebcam();
+          }
+        }, 1000);
       }
     } catch (error) {
       toast({
@@ -146,12 +163,15 @@ const VirtualTryOn = () => {
 
   const captureFromWebcam = () => {
     if (videoRef.current && canvasRef.current) {
+      const video = videoRef.current;
       const canvas = canvasRef.current;
       const context = canvas.getContext('2d');
-      if (context) {
-        canvas.width = videoRef.current.videoWidth;
-        canvas.height = videoRef.current.videoHeight;
-        context.drawImage(videoRef.current, 0, 0);
+
+      // Ensure video is loaded and has dimensions
+      if (context && video.videoWidth > 0 && video.videoHeight > 0) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0);
 
         canvas.toBlob((blob) => {
           if (blob) {
@@ -164,6 +184,12 @@ const VirtualTryOn = () => {
             });
           }
         }, 'image/jpeg', 0.8);
+      } else {
+        toast({
+          title: "Capture failed",
+          description: "Please wait for camera to fully load",
+          variant: "destructive",
+        });
       }
     }
   };
@@ -244,9 +270,23 @@ const VirtualTryOn = () => {
 
               {/* Webcam Video */}
               {isWebcamActive && (
-                <div className="relative">
-                  <video ref={videoRef} autoPlay className="w-full rounded-lg" />
+                <div className="relative mt-4">
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    muted
+                    playsInline
+                    className="w-full rounded-lg"
+                    style={{ transform: 'scaleX(-1)' }}
+                  />
                   <canvas ref={canvasRef} className="hidden" />
+
+                  {/* Countdown Overlay */}
+                  {countdown && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-white text-6xl font-bold">
+                      {countdown}
+                    </div>
+                  )}
                 </div>
               )}
 
