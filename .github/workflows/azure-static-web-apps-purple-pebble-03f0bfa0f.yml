@@ -14,6 +14,9 @@ jobs:
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
     runs-on: ubuntu-latest
     name: Build and Deploy Job
+    env:
+      # if you created a repo variable use this:
+      VITE_API_URL: ${{ vars.VITE_API_URL }}
     permissions:
       id-token: write
       contents: read
@@ -56,4 +59,3 @@ jobs:
         uses: Azure/static-web-apps-deploy@v1
         with:
           action: "close"
-
