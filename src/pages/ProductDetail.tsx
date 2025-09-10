@@ -44,8 +44,15 @@ const ProductDetail = () => {
   const previewDurationMs = 3000;
   const countdownSeconds = 5;
 
-  // Backend proxy endpoint
-  const TRYON_API_URL = "http://localhost:5000/api/virtual-tryon";
+  // use VITE_API_URL from Vite (injected at build time). Fallback to localhost for local dev.
+  const API_BASE =
+    (import.meta as any).env?.VITE_API_URL ??
+    (typeof window !== "undefined" && window.location.hostname === "localhost"
+      ? "http://localhost:5000"
+      : "");
+
+  const TRYON_API_URL = API_BASE ? `${API_BASE.replace(/\/$/, "")}/api/virtual-tryon` : "";
+
 
   // Find product by route id
   const product = products.find((p) => p.id === Number(id));

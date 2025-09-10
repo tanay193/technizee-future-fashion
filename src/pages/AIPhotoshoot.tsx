@@ -80,7 +80,15 @@ const AIPhotoshoot = () => {
   };
 
   const handleGeneratePhotoshoot = async () => {
-    const TRYON_API_URL = "http://localhost:5000/api/virtual-tryon";
+    // use VITE_API_URL from Vite (injected at build time). Fallback to localhost for local dev.
+    const API_BASE =
+      (import.meta as any).env?.VITE_API_URL ??
+      (typeof window !== "undefined" && window.location.hostname === "localhost"
+        ? "http://localhost:5000"
+        : "");
+
+    const TRYON_API_URL = API_BASE ? `${API_BASE.replace(/\/$/, "")}/api/virtual-tryon` : "";
+
 
     if (!TRYON_API_URL) {
       toast({
