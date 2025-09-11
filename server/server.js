@@ -8,7 +8,9 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors()); // Allow all origins (customize if needed)
-app.use(express.json({ limit: '10mb' })); // Increase limit if sending large images
+app.use(express.json({ limit: '50mb' })); // Increase limit if sending large images
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
 
 app.post('/api/virtual-tryon', async (req, res) => {
     try {
