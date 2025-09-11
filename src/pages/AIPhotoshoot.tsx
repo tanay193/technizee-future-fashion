@@ -46,7 +46,7 @@ const AIPhotoshoot = () => {
   const loadModelImageAsBase64 = async (modelType: string, background: string): Promise<string> => {
     if (!modelType || !background) throw new Error("Invalid model selection");
 
-    const imagePath = `/src/assets/models/${modelType}-${background}.jpg`;
+    const imagePath = `/models/${modelType}-${background}.jpg`;
 
     try {
       const response = await fetch(imagePath);
