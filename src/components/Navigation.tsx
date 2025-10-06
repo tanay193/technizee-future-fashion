@@ -6,9 +6,10 @@ const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   const navItems = [
-    { name: "Solutions", href: "#solutions" },
+    { name: "Home", href: "#" },
+    { name: "Services", href: "#services" },
+    { name: "Portfolio", href: "#portfolio" },
     { name: "Demo", href: "#demo" },
-    { name: "Pricing", href: "#pricing" },
     { name: "Contact", href: "#contact" },
   ];
 
@@ -36,8 +37,11 @@ const Navigation = () => {
                 {item.name}
               </a>
             ))}
-            <Button className="btn-primary">
-              Book a Demo
+            <Button 
+              className="btn-primary"
+              onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
+            >
+              Request Demo
             </Button>
           </div>
 
@@ -67,8 +71,14 @@ const Navigation = () => {
                 </a>
               ))}
               <div className="px-3 pt-2">
-                <Button className="btn-primary w-full">
-                  Book a Demo
+                <Button 
+                  className="btn-primary w-full"
+                  onClick={() => {
+                    setIsOpen(false);
+                    document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                >
+                  Request Demo
                 </Button>
               </div>
             </div>

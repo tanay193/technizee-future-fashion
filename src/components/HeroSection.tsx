@@ -25,39 +25,40 @@ const HeroSection = () => {
       <div className="relative z-10 container mx-auto px-6 text-center text-white">
         <div className="max-w-5xl mx-auto animate-fade-up">
           <h1 className="heading-hero mb-6 leading-tight">
-            Future of Fashion Tech
-            <span className="block text-white/90">
-              is Here
-            </span>
+            AI Photoshoots & Virtual Try-On for Fashion Brands
           </h1>
           
-          <p className="text-base md:text-2xl mb-8 text-white/80 max-w-3xl mx-auto leading-relaxed">
-            Empowering fashion brands with AI innovation.
+          <p className="text-2xl md:text-3xl mb-4 font-semibold">
+            No Models. No Studio. Just Upload & Get Stunning Results.
+          </p>
+          
+          <p className="text-lg md:text-xl mb-8 text-white/90 max-w-3xl mx-auto leading-relaxed">
+            Save 90% on photoshoot costs. Launch collections 3× faster. Generate professional model images in minutes.
           </p>
           
           <div className="mb-16">
             <Button 
               size="lg" 
-              className="bg-white text-hero-bg hover:bg-white/90 font-semibold px-8 py-4 text-lg"
-              onClick={() => document.getElementById('solutions')?.scrollIntoView({ behavior: 'smooth' })}
+              className="bg-white text-hero-bg hover:bg-white/90 font-bold px-10 py-6 text-xl shadow-glow hover:scale-105 transition-transform duration-300"
+              onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
             >
-              Explore Demos
+              Request Demo
             </Button>
           </div>
           
           {/* Trust Indicators */}
-          <div className="flex flex-wrap justify-center items-center gap-8 text-white/70">
+          <div className="flex flex-wrap justify-center items-center gap-8 text-white/80">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-white rounded-full"></div>
-              <span className="text-sm">Trusted by 500+ Fashion Brands</span>
+              <span className="text-sm md:text-base">Trusted by 500+ Fashion Brands</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-white rounded-full"></div>
-              <span className="text-sm">70% Cost Reduction</span>
+              <span className="text-sm md:text-base">90% Cost Reduction</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-white rounded-full"></div>
-              <span className="text-sm">Real-Time AI Technology</span>
+              <span className="text-sm md:text-base">Launch 3× Faster</span>
             </div>
           </div>
         </div>

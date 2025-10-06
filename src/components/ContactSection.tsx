@@ -48,10 +48,13 @@ const ContactSection = () => {
       <div className="container mx-auto px-6">
         <div className="text-center mb-16 animate-fade-up">
           <h2 className="heading-section mb-6">
-            Get Started Today
+            Request a Demo
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Ready to transform your fashion business? Let's talk about your needs.
+            See how our AI technology can transform your fashion brand
+          </p>
+          <p className="text-lg text-primary font-semibold mt-4">
+            We respond within 24 hours
           </p>
         </div>
 
@@ -92,7 +95,7 @@ const ContactSection = () => {
               </div>
 
               <div>
-                <Label>What Services You're Interested In</Label>
+                <Label>Services You're Interested In</Label>
                 <div className="grid grid-cols-2 gap-4 mt-2">
                   {services.map((service) => (
                     <div key={service} className="flex items-center space-x-2">
@@ -101,7 +104,7 @@ const ContactSection = () => {
                         checked={formData.services.includes(service)}
                         onCheckedChange={(checked) => handleServiceChange(service, !!checked)}
                       />
-                      <Label htmlFor={service} className="text-sm">
+                      <Label htmlFor={service} className="text-sm cursor-pointer">
                         {service}
                       </Label>
                     </div>
