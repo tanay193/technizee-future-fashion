@@ -117,11 +117,13 @@ const PortfolioSection = () => {
         </div>
         
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
-          {filteredItems.map((item, index) => (
-            <div
-              key={index}
-              className={`group relative overflow-hidden rounded-xl shadow-card hover:shadow-glow transition-all duration-300 animate-fade-up animate-delay-${(index + 1) * 100}`}
-            >
+          {filteredItems.map((item, index) => {
+            const delayClass = index % 4 === 0 ? '' : index % 4 === 1 ? 'animate-delay-100' : index % 4 === 2 ? 'animate-delay-200' : 'animate-delay-300';
+            return (
+              <div
+                key={index}
+                className={`group relative overflow-hidden rounded-xl shadow-card hover:shadow-glow transition-all duration-300 animate-fade-up ${delayClass}`}
+              >
               <img 
                 src={item.image} 
                 alt={item.caption}
@@ -139,7 +141,8 @@ const PortfolioSection = () => {
                 </div>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
         
         <div className="text-center mt-12">
