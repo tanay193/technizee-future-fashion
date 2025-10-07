@@ -1,70 +1,123 @@
+import { useState } from "react";
 import menShirt1 from "@/assets/men-shirt-1.jpg";
 import menShirt2 from "@/assets/men-shirt-2.jpg";
+import menShirt3 from "@/assets/men-shirt-3.jpg";
+import menPants1 from "@/assets/men-pants-1.jpg";
 import womenTop1 from "@/assets/women-top-1.jpg";
 import womenTop2 from "@/assets/women-top-2.jpg";
+import womenTop3 from "@/assets/women-top-3.jpg";
+import womenBottom1 from "@/assets/women-bottom-1.jpg";
 import indianFemaleStudio from "@/assets/models/indian-female-studio.jpg";
 import indianMaleStudio from "@/assets/models/indian-male-studio.jpg";
 import aiPhotoshootDemo from "@/assets/ai-photoshoot-demo.jpg";
 import virtualTryonDemo from "@/assets/virtual-tryon-demo.jpg";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const PortfolioSection = () => {
+  const [activeFilter, setActiveFilter] = useState<string>("all");
+
   const portfolioItems = [
     {
       image: aiPhotoshootDemo,
       caption: "AI-generated photoshoot from flatlay",
-      type: "AI Photoshoot"
+      type: "AI Photoshoot",
+      category: "women"
     },
     {
       image: virtualTryonDemo,
       caption: "Virtual try-on sample",
-      type: "Virtual Try-On"
+      type: "Virtual Try-On",
+      category: "tryon"
     },
     {
       image: indianFemaleStudio,
       caption: "Studio-quality AI model",
-      type: "AI Photoshoot"
+      type: "AI Photoshoot",
+      category: "women"
     },
     {
       image: indianMaleStudio,
       caption: "Professional model generation",
-      type: "AI Photoshoot"
+      type: "AI Photoshoot",
+      category: "men"
     },
     {
       image: menShirt1,
       caption: "Product to model transformation",
-      type: "AI Photoshoot"
+      type: "AI Photoshoot",
+      category: "men"
+    },
+    {
+      image: menShirt3,
+      caption: "Men's apparel AI photoshoot",
+      type: "AI Photoshoot",
+      category: "men"
     },
     {
       image: womenTop1,
       caption: "Instant model visualization",
-      type: "AI Photoshoot"
+      type: "AI Photoshoot",
+      category: "women"
+    },
+    {
+      image: womenTop3,
+      caption: "Women's fashion AI model",
+      type: "AI Photoshoot",
+      category: "women"
     },
     {
       image: menShirt2,
       caption: "Virtual garment fitting",
-      type: "Virtual Try-On"
+      type: "Virtual Try-On",
+      category: "tryon"
     },
     {
       image: womenTop2,
       caption: "Real-time try-on preview",
-      type: "Virtual Try-On"
+      type: "Virtual Try-On",
+      category: "tryon"
+    },
+    {
+      image: menPants1,
+      caption: "Men's bottoms AI photoshoot",
+      type: "AI Photoshoot",
+      category: "men"
+    },
+    {
+      image: womenBottom1,
+      caption: "Women's bottoms showcase",
+      type: "AI Photoshoot",
+      category: "women"
     }
   ];
+
+  const filteredItems = activeFilter === "all" 
+    ? portfolioItems 
+    : portfolioItems.filter(item => item.category === activeFilter);
 
   return (
     <section id="portfolio" className="py-20 bg-background">
       <div className="container mx-auto px-6">
-        <div className="text-center mb-16 animate-fade-up">
+        <div className="text-center mb-12 animate-fade-up">
           <h2 className="heading-section mb-6">
             Our Work
           </h2>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
             See the quality and realism our AI technology delivers for fashion brands
           </p>
+          
+          <Tabs defaultValue="all" className="w-full max-w-md mx-auto" onValueChange={setActiveFilter}>
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="all">All</TabsTrigger>
+              <TabsTrigger value="men">Men's</TabsTrigger>
+              <TabsTrigger value="women">Women's</TabsTrigger>
+              <TabsTrigger value="tryon">Try-On</TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
         
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
-          {portfolioItems.map((item, index) => (
+          {filteredItems.map((item, index) => (
             <div
               key={index}
               className={`group relative overflow-hidden rounded-xl shadow-card hover:shadow-glow transition-all duration-300 animate-fade-up animate-delay-${(index + 1) * 100}`}
