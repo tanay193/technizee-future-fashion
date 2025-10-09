@@ -24,50 +24,50 @@ const PortfolioSection = () => {
       category: "women"
     },
     {
-      image: virtualTryonDemo,
-      caption: "Virtual try-on sample",
-      type: "Virtual Try-On",
-      category: "tryon"
-    },
-    {
       image: indianFemaleStudio,
-      caption: "Studio-quality AI model",
+      caption: "Studio photoshoot - AI generated model",
       type: "AI Photoshoot",
       category: "women"
     },
     {
       image: indianMaleStudio,
-      caption: "Professional model generation",
+      caption: "Professional male model - AI generated",
       type: "AI Photoshoot",
       category: "men"
     },
     {
-      image: menShirt1,
-      caption: "Product to model transformation",
-      type: "AI Photoshoot",
-      category: "men"
-    },
-    {
-      image: menShirt3,
-      caption: "Men's apparel AI photoshoot",
-      type: "AI Photoshoot",
-      category: "men"
+      image: virtualTryonDemo,
+      caption: "Virtual try-on with real user photo",
+      type: "Virtual Try-On",
+      category: "tryon"
     },
     {
       image: womenTop1,
-      caption: "Instant model visualization",
+      caption: "Women's top - AI photoshoot",
       type: "AI Photoshoot",
       category: "women"
     },
     {
       image: womenTop3,
-      caption: "Women's fashion AI model",
+      caption: "Elegant women's wear - AI model",
       type: "AI Photoshoot",
       category: "women"
     },
     {
+      image: menShirt1,
+      caption: "Men's shirt - Product to model",
+      type: "AI Photoshoot",
+      category: "men"
+    },
+    {
+      image: menShirt3,
+      caption: "Men's casual wear - AI photoshoot",
+      type: "AI Photoshoot",
+      category: "men"
+    },
+    {
       image: menShirt2,
-      caption: "Virtual garment fitting",
+      caption: "Virtual try-on - Men's shirt",
       type: "Virtual Try-On",
       category: "tryon"
     },
@@ -79,13 +79,13 @@ const PortfolioSection = () => {
     },
     {
       image: menPants1,
-      caption: "Men's bottoms AI photoshoot",
+      caption: "Men's pants - AI photoshoot",
       type: "AI Photoshoot",
       category: "men"
     },
     {
       image: womenBottom1,
-      caption: "Women's bottoms showcase",
+      caption: "Women's bottoms - AI model showcase",
       type: "AI Photoshoot",
       category: "women"
     }

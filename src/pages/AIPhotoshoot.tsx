@@ -117,10 +117,12 @@ const AIPhotoshoot = () => {
       const modelImageBase64 = await loadModelImageAsBase64(selectedModelType, selectedBackground);
 
       const requestBody = {
-        model_image: modelImageBase64, // Send as base64 from frontend
+        service: "ai_photoshoot",
         garment_image: uploadedImage, // Already base64 from file upload
-        category: selectedCategory, // Use selected category
-        has_sleeves: null // Let model auto-detect
+        model_type: selectedModelType === "indian-female" ? "Indian Female" : "Indian Male",
+        background_style: selectedBackground.charAt(0).toUpperCase() + selectedBackground.slice(1), // Capitalize
+        category: selectedCategory,
+        extra_prompt: null
       };
 
       const apiResponse = await fetch(TRYON_API_URL, {

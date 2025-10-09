@@ -57,10 +57,13 @@ const VirtualTryOn = () => {
       const category = product.type;
 
       const requestBody = {
+        service: "virtual_tryon",
         user_image: userImageB64,
         garment_image: garmentImageB64,
         category: category,
-        has_sleeves: null // Let model auto-detect
+        garment_type: category === "upper_body" ? "shirt" : category === "lower_body" ? "pants" : "dress",
+        garment_orientation: "flatlay",
+        extra_prompt: null
       };
 
       const response = await fetch(VIRTUAL_TRYON_API_URL, {
