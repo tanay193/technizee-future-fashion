@@ -61,8 +61,8 @@ const VirtualTryOn = () => {
         user_image: userImageB64,
         garment_image: garmentImageB64,
         category: category,
-        garment_type: category === "upper_body" ? "shirt" : category === "lower_body" ? "pants" : "dress",
-        garment_orientation: "flatlay",
+        garment_type: null, // Auto-detect
+        garment_orientation: null, // Auto-detect
         extra_prompt: null
       };
 
