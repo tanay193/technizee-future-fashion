@@ -34,7 +34,7 @@ const Footer = () => {
                 <Linkedin className="w-6 h-6" />
               </a>
               <a 
-                href="mailto:hello@technizee.com" 
+                href="mailto:marketing@technizee.com" 
                 className="text-background/60 hover:text-background transition-colors"
                 aria-label="Email"
               >
@@ -58,8 +58,8 @@ const Footer = () => {
           <div>
             <h4 className="font-semibold mb-4">Contact</h4>
             <div className="space-y-2 text-background/80">
-              <p>hello@technizee.com</p>
-              <p>+91 98765 43210</p>
+              <p>marketing@technizee.com</p>
+              <p>+916300524710</p>
               <a 
                 href="#contact" 
                 className="inline-block bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary-hover transition-colors mt-4"
