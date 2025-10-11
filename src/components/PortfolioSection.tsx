@@ -126,7 +126,7 @@ const PortfolioSection = () => {
               <img 
                 src={item.image} 
                 alt={item.caption}
-                className="w-full h-80 object-cover transition-transform duration-300 group-hover:scale-105"
+                className="w-full h-80 object-contain transition-transform duration-300 group-hover:scale-105"
                 loading="lazy"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-foreground/90 via-foreground/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
