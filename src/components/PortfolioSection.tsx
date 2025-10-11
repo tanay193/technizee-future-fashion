@@ -21,19 +21,19 @@ const PortfolioSection = () => {
       image: aiPhotoshootDemo,
       caption: "AI-generated photoshoot from flatlay",
       type: "AI Photoshoot",
-      category: "women"
+      category: "photoshoot"
     },
     {
       image: indianFemaleStudio,
       caption: "Studio photoshoot - AI generated model",
       type: "AI Photoshoot",
-      category: "women"
+      category: "photoshoot"
     },
     {
       image: indianMaleStudio,
       caption: "Professional male model - AI generated",
       type: "AI Photoshoot",
-      category: "men"
+      category: "photoshoot"
     },
     {
       image: virtualTryonDemo,
@@ -45,25 +45,25 @@ const PortfolioSection = () => {
       image: womenTop1,
       caption: "Women's top - AI photoshoot",
       type: "AI Photoshoot",
-      category: "women"
+      category: "photoshoot"
     },
     {
       image: womenTop3,
       caption: "Elegant women's wear - AI model",
       type: "AI Photoshoot",
-      category: "women"
+      category: "photoshoot"
     },
     {
       image: menShirt1,
       caption: "Men's shirt - Product to model",
       type: "AI Photoshoot",
-      category: "men"
+      category: "photoshoot"
     },
     {
       image: menShirt3,
       caption: "Men's casual wear - AI photoshoot",
       type: "AI Photoshoot",
-      category: "men"
+      category: "photoshoot"
     },
     {
       image: menShirt2,
@@ -81,13 +81,13 @@ const PortfolioSection = () => {
       image: menPants1,
       caption: "Men's pants - AI photoshoot",
       type: "AI Photoshoot",
-      category: "men"
+      category: "photoshoot"
     },
     {
       image: womenBottom1,
       caption: "Women's bottoms - AI model showcase",
       type: "AI Photoshoot",
-      category: "women"
+      category: "photoshoot"
     }
   ];
 
@@ -107,11 +107,10 @@ const PortfolioSection = () => {
           </p>
           
           <Tabs defaultValue="all" className="w-full max-w-md mx-auto" onValueChange={setActiveFilter}>
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="all">All</TabsTrigger>
-              <TabsTrigger value="men">Men's</TabsTrigger>
-              <TabsTrigger value="women">Women's</TabsTrigger>
-              <TabsTrigger value="tryon">Try-On</TabsTrigger>
+              <TabsTrigger value="photoshoot">AI Photoshoot</TabsTrigger>
+              <TabsTrigger value="tryon">Virtual Try-On</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
