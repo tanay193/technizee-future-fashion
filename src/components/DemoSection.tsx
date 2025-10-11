@@ -90,9 +90,11 @@ const DemoSection = () => {
           <p className="text-muted-foreground mb-4">
             <strong>Note:</strong> Use a clear, full-body photo with plain background for best results.
           </p>
-          <Button className="btn-primary">
-            Want a custom solution? Contact us for your own branded integration
-          </Button>
+          <a href="#contact">
+            <Button className="btn-primary">
+              Want a custom solution? Contact us for your own branded integration
+            </Button>
+          </a>
         </div>
       </div>
     </section>
