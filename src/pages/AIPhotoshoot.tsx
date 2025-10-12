@@ -46,7 +46,7 @@ const AIPhotoshoot = () => {
   const loadModelImageAsBase64 = async (modelType: string, background: string): Promise<string> => {
     if (!modelType || !background) throw new Error("Invalid model selection");
 
-    const imagePath = `/models/${modelType}-${background}.jpg`;
+    const imagePath = `/src/assets/models/${modelType}-${background}.jpg`;
 
     try {
       const response = await fetch(imagePath);
@@ -80,17 +80,9 @@ const AIPhotoshoot = () => {
   };
 
   const handleGeneratePhotoshoot = async () => {
-    // use VITE_API_URL from Vite (injected at build time). Fallback to localhost for local dev.
-    const API_BASE =
-      (import.meta as any).env?.VITE_API_URL ??
-      (typeof window !== "undefined" && window.location.hostname === "localhost"
-        ? "http://localhost:5000"
-        : "");
+    const PHOTOSHOOT_API_URL = "http://localhost:5000/api/ai-photoshoot";
 
-    const TRYON_API_URL = API_BASE ? `${API_BASE.replace(/\/$/, "")}/api/virtual-tryon` : "";
-
-
-    if (!TRYON_API_URL) {
+    if (!PHOTOSHOOT_API_URL) {
       toast({
         title: "API not configured",
         description: "Please provide the Try-On API URL to enable photoshoot generation.",
@@ -125,13 +117,15 @@ const AIPhotoshoot = () => {
       const modelImageBase64 = await loadModelImageAsBase64(selectedModelType, selectedBackground);
 
       const requestBody = {
-        model_image: modelImageBase64, // Send as base64 from frontend
+        service: "ai_photoshoot",
         garment_image: uploadedImage, // Already base64 from file upload
-        category: selectedCategory, // Use selected category
-        has_sleeves: null // Let model auto-detect
+        model_type: selectedModelType === "indian-female" ? "Indian Female" : "Indian Male",
+        background_style: selectedBackground.charAt(0).toUpperCase() + selectedBackground.slice(1), // Capitalize
+        category: selectedCategory,
+        extra_prompt: null
       };
 
-      const apiResponse = await fetch(TRYON_API_URL, {
+      const apiResponse = await fetch(PHOTOSHOOT_API_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -143,7 +137,10 @@ const AIPhotoshoot = () => {
         throw new Error(`API request failed (${apiResponse.status})`);
       }
 
-      const data = await apiResponse.json();
+      let data = await apiResponse.json();
+      if (typeof data === "string") {
+        try { data = JSON.parse(data); } catch { }
+      }
 
       if (data.success && data.result_image) {
         setGeneratedImages([data.result_image]);

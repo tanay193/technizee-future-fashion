@@ -21,21 +21,21 @@ const DemoSection = () => {
           {/* Virtual Try-On Demo */}
           <div className="card-feature animate-fade-up">
             <div className="mb-6">
-              <img 
-                src={virtualTryonMockup} 
+              <img
+                src={virtualTryonMockup}
                 alt="Virtual Try-On Demo Interface"
                 className="w-full h-64 object-cover rounded-lg"
               />
             </div>
-            
+
             <h3 className="text-2xl font-bold mb-4 text-foreground">
               Virtual Try-On
             </h3>
-            
+
             <p className="text-muted-foreground mb-6">
               Upload full body photo on plain background. See how customers can try your clothes online.
             </p>
-            
+
             <div className="flex flex-col sm:flex-row gap-3">
               <Link to="/virtual-tryon" className="flex-1">
                 <Button className="btn-primary w-full">
@@ -54,21 +54,21 @@ const DemoSection = () => {
           {/* AI Photoshoot Demo */}
           <div className="card-feature animate-fade-up animate-delay-200">
             <div className="mb-6">
-              <img 
-                src={aiPhotoshootMockup} 
+              <img
+                src={aiPhotoshootMockup}
                 alt="AI Photoshoot Demo Interface"
                 className="w-full h-64 object-cover rounded-lg"
               />
             </div>
-            
+
             <h3 className="text-2xl font-bold mb-4 text-foreground">
               AI Photoshoot
             </h3>
-            
+
             <p className="text-muted-foreground mb-6">
               Show a sample flat garment → AI-styled model photo. No photoshoots. No models. Just upload.
             </p>
-            
+
             <div className="flex flex-col sm:flex-row gap-3">
               <Link to="/ai-photoshoot" className="flex-1">
                 <Button className="btn-primary w-full">
@@ -90,9 +90,11 @@ const DemoSection = () => {
           <p className="text-muted-foreground mb-4">
             <strong>Note:</strong> Use a clear, full-body photo with plain background for best results.
           </p>
-          <Button className="btn-primary">
-            Want a custom solution? Contact us for your own branded integration
-          </Button>
+          <a href="#contact">
+            <Button className="btn-primary">
+              Want a custom solution? Contact us for your own branded integration
+            </Button>
+          </a>
         </div>
       </div>
     </section>

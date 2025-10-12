@@ -9,17 +9,36 @@ const Footer = () => {
           <div className="md:col-span-2">
             <h3 className="text-2xl font-bold mb-4">Technizee</h3>
             <p className="text-background/80 mb-4 max-w-md">
-              Empowering fashion brands with AI innovation. Transform your business with cutting-edge technology.
+              Technizee is an AI-powered fashion technology startup helping brands create realistic product photos and virtual try-ons without costly photoshoots.
+            </p>
+            <p className="text-background/90 font-semibold mb-4 italic">
+              "Bringing creativity and efficiency to fashion with AI."
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-background/60 hover:text-background transition-colors">
-                <Instagram className="w-5 h-5" />
+              <a
+                href="https://www.instagram.com/technizee.fashion/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-background/60 hover:text-background transition-colors"
+                aria-label="Instagram"
+              >
+                <Instagram className="w-6 h-6" />
               </a>
-              <a href="#" className="text-background/60 hover:text-background transition-colors">
-                <Linkedin className="w-5 h-5" />
+              <a
+                href="https://www.linkedin.com/company/technizee-pvt-ltd"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-background/60 hover:text-background transition-colors"
+                aria-label="LinkedIn"
+              >
+                <Linkedin className="w-6 h-6" />
               </a>
-              <a href="mailto:hello@technizee.com" className="text-background/60 hover:text-background transition-colors">
-                <Mail className="w-5 h-5" />
+              <a
+                href="mailto:marketing@technizee.com"
+                className="text-background/60 hover:text-background transition-colors"
+                aria-label="Email"
+              >
+                <Mail className="w-6 h-6" />
               </a>
             </div>
           </div>
@@ -28,9 +47,9 @@ const Footer = () => {
           <div>
             <h4 className="font-semibold mb-4">Quick Links</h4>
             <ul className="space-y-2">
-              <li><a href="#solutions" className="text-background/80 hover:text-background transition-colors">Solutions</a></li>
+              <li><a href="#services" className="text-background/80 hover:text-background transition-colors">Services</a></li>
+              <li><a href="#portfolio" className="text-background/80 hover:text-background transition-colors">Portfolio</a></li>
               <li><a href="#demo" className="text-background/80 hover:text-background transition-colors">Demo</a></li>
-              <li><a href="#pricing" className="text-background/80 hover:text-background transition-colors">Pricing</a></li>
               <li><a href="#contact" className="text-background/80 hover:text-background transition-colors">Contact</a></li>
             </ul>
           </div>
@@ -39,13 +58,13 @@ const Footer = () => {
           <div>
             <h4 className="font-semibold mb-4">Contact</h4>
             <div className="space-y-2 text-background/80">
-              <p>hello@technizee.com</p>
-              <p>+91 98765 43210</p>
-              <a 
-                href="#demo" 
+              <p>marketing@technizee.com</p>
+              <p>+916300524710</p>
+              <a
+                href="#contact"
                 className="inline-block bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary-hover transition-colors mt-4"
               >
-                Book a Demo
+                Request Demo
               </a>
             </div>
           </div>

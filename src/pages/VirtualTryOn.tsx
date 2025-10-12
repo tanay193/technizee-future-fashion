@@ -22,15 +22,7 @@ const VirtualTryOn = () => {
 
 
   const handleVirtualTryOn = async (productId: number) => {
-    // use VITE_API_URL from Vite (injected at build time). Fallback to localhost for local dev.
-    const API_BASE =
-      (import.meta as any).env?.VITE_API_URL ??
-      (typeof window !== "undefined" && window.location.hostname === "localhost"
-        ? "http://localhost:5000"
-        : "");
-
-    const VIRTUAL_TRYON_API_URL = API_BASE ? `${API_BASE.replace(/\/$/, "")}/api/virtual-tryon` : "";
-
+    const VIRTUAL_TRYON_API_URL = "http://localhost:5000/api/virtual-tryon";
 
     if (!VIRTUAL_TRYON_API_URL) {
       toast({
@@ -65,10 +57,13 @@ const VirtualTryOn = () => {
       const category = product.type;
 
       const requestBody = {
+        service: "virtual_tryon",
         user_image: userImageB64,
         garment_image: garmentImageB64,
         category: category,
-        has_sleeves: null // Let model auto-detect
+        garment_type: null, // Auto-detect
+        garment_orientation: null, // Auto-detect
+        extra_prompt: null
       };
 
       const response = await fetch(VIRTUAL_TRYON_API_URL, {
